@@ -1,103 +1,16 @@
-# ICD11-NAMASTE-Bridge
+# React + Vite
 
-Middleware platform enabling interoperability between NAMASTE, ICD-11 TM, and EHR systems.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
----
+Currently, two official plugins are available:
 
-## Problem Statement
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-SIH25026: API Integration for Traditional Medicine (NAMASTE/ICD-11)
+## React Compiler
 
-Developing code to integrate the NAMASTE portal and the International Classification of Diseases (Traditional Medicine Module) into existing Electronic Health Record (EHR) systems.
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
----
+## Expanding the ESLint configuration
 
-## Proposed Solution
-
-This platform enables interoperability between NAMASTE terminology, ICD-11 TM classifications, and modern Electronic Health Record (EHR) systems.
-
-Core objective include:
-- terminology mapping,
-- standardized healthcare data exchange,
-- API interoperability,
-- scalable integration architecture.
-
----
-
-## MVP Goals
-
-- Patient diagnosis input
-- NAMASTE ↔ ICD-11 TM terminology mapping
-- API-based data exchange
-- Structured patient record storage
-- Standardized healthcare data responses
-- Record visualization dashboard
-- EHR-compatible structured output
-
-
----
-
-## Proposed Architecture
-
-Frontend  
-↓  
-Main Backend API  
-↓  
-Mapping Engine  
-↓  
-Database / External EHR APIs
-
----
-
-## Tech Stack
-
-### Frontend
-- Next.js
-
-### Backend
-- Express.js
-
-### Database
-- PostgreSQL
-
-### Mapping Engine
-- FastAPI
-
----
-
-## Repository Structure
-
-```text
-/docs
-/frontend
-/backend
-/mapping-engine
-```
-
----
-
-## Team Roles
-
-### Soham Chakraborty - System Design & Mapping Engine
-- System design
-- Mapping logic
-- Service integration
-
-### Adrija Malakar - Backend & Database
-- API development
-- Database management
-- Authentication & backend services
-
-### Malini Singh - Frontend Integration, QA & Documentation
-- Frontend development
-- API integration
-- Testing & validation
-- Documentation
-
----
-
-## References
-
-- NAMASTE Portal
-- ICD-11 Traditional Medicine Module
-- HL7 FHIR Standards
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
