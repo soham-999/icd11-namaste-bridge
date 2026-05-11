@@ -1,0 +1,54 @@
+# Node.js
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# Next.js
+
+.next/
+out/
+build/
+
+
+# Environment Variables
+
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+
+# Logs
+
+logs/
+*.log
+
+
+# Python
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+
+# IDE / Editor
+
+.vscode/
+.idea/
+
+
+# OS Files
+
+.DS_Store
+Thumbs.db
+
+
+# Coverage / Testing
+
+coverage/
