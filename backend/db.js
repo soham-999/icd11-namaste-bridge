@@ -5,14 +5,13 @@ const client = new Client({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
-  password: String(process.env.DB_PASS),
-  port: 5432,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
 });
 
 client.connect()
   .then(() => console.log("DB connected successfully"))
-  .catch(err => {
-    console.log("DB connection error:", err);
-  });
+  .catch(err => console.error("DB connection error:", err));
 
-module.exports = client;
+module.exports = client; 
+console.log("DB_USER =", process.env.DB_USER);
