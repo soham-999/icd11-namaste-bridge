@@ -8,7 +8,9 @@ const addPatient = async (req, res) => {
 
     const mappingResult = await mapPatientCondition(symptoms);
 
-    const results = mappingResult?.data || [];
+    const results = Array.isArray(mappingResult?.data)
+  ? mappingResult.data
+  : [];
 
     const firstMapping = results?.[0];
 
