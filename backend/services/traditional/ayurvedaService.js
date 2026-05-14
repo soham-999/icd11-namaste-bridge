@@ -1,29 +1,15 @@
 const getAyurvedaMapping = (symptom) => {
-  const mapping = [
-    {
-      symptom: "fever",
-      dosha: "Pitta",
-      description: "Heat imbalance"
-    },
-    {
-      symptom: "cough",
-      dosha: "Kapha",
-      description: "Mucus imbalance"
-    },
-    {
-      symptom: "headache",
-      dosha: "Vata",
-      description: "Nervous imbalance"
-    }
-  ];
+  const s = symptom?.toLowerCase() || "";
 
-  return mapping.find(
-    item => item.symptom.toLowerCase() === symptom.toLowerCase()
-  ) || {
-    symptom,
-    dosha: "Unknown",
-    description: "No mapping found"
-  };
+  if (s.includes("fever")) {
+    return { dosha: "Pitta", description: "Pitta aggravation suspected" };
+  }
+
+  if (s.includes("cough")) {
+    return { dosha: "Kapha", description: "Kapha imbalance suspected" };
+  }
+
+  return { dosha: "Vata", description: "Vata imbalance possible" };
 };
 
 module.exports = { getAyurvedaMapping };
