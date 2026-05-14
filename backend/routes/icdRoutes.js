@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { findDisease } = require("../services/icdService");
+const { findDisease } = require("../services/icd/icdService");
 const { success, error } = require("../utils/response");
 
 router.get("/:symptom", async (req, res) => {

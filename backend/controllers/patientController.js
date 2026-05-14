@@ -1,5 +1,5 @@
 const client = require("../db");
-const { findDisease } = require("../services/icdService");
+const { findDisease } = require("../services/icd/icdService");
 
 
 // ADD PATIENT (HYBRID ICD FLOW)
