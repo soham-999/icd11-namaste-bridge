@@ -52,3 +52,6 @@ Thumbs.db
 # Coverage / Testing
 
 coverage/
+
+# Mapping engine plans
+mapping-engine/plan/
