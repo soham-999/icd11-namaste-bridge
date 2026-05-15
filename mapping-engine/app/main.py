@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 
 from .config import settings
 from .schemas import (
@@ -21,11 +22,20 @@ app = FastAPI(
 )
 
 
+@app.middleware("http")
+async def request_id_middleware(request: Request, call_next):
+    request_id = request.headers.get("x-request-id") or str(uuid4())
+    request.state.request_id = request_id
+    response = await call_next(request)
+    response.headers["x-request-id"] = request_id
+    return response
+
+
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(
     request: Request, exc: Exception
 ) -> JSONResponse:
-    request_id = request.headers.get("x-request-id") or str(uuid4())
+    request_id = getattr(request.state, "request_id", str(uuid4()))
     payload = ErrorResponse(
         request_id=request_id,
         error=ErrorDetail(
@@ -34,6 +44,22 @@ async def unhandled_exception_handler(
         ),
     )
     return JSONResponse(status_code=500, content=payload.model_dump())
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    request_id = getattr(request.state, "request_id", str(uuid4()))
+    payload = ErrorResponse(
+        request_id=request_id,
+        error=ErrorDetail(
+            code="validation_error",
+            message="Request validation failed",
+            details=exc.errors(),
+        ),
+    )
+    return JSONResponse(status_code=422, content=payload.model_dump())
 
 
 @app.get(f"{settings.api_prefix}/health", response_model=HealthResponse)
@@ -57,13 +83,14 @@ def capabilities() -> CapabilitiesResponse:
     f"{settings.api_prefix}/map",
     response_model=MapResponse,
     responses={
+        422: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },
 )
-def map_conditions(payload: MapRequest) -> MapResponse:
+def map_conditions(request: Request, payload: MapRequest) -> MapResponse:
     results = map_symptoms(payload.symptoms)
     return MapResponse(
-        request_id=str(uuid4()),
+        request_id=request.state.request_id,
         engine_version=settings.service_version,
         total=len(results),
         data=results,
