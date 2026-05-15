@@ -8,6 +8,12 @@ Standalone service for mapping symptoms to ICD-11 TM and traditional medicine la
 - `GET /v1/capabilities`
 - `POST /v1/map`
 
+## Phase 0 Readiness
+
+- Mapping Engine owns the API contract and versioning.
+- Deterministic, explainable responses with request-level tracing (`x-request-id`).
+- Mock sources only; external ICD sources are deferred to Phase 1.
+
 ## Example
 
 Request:
@@ -48,6 +54,10 @@ Response (example):
 	]
 }
 ```
+
+## Notes
+
+- The service echoes `x-request-id` in responses for traceability.
 
 ## Run (dev)
 

@@ -19,6 +19,10 @@ from .service import map_symptoms
 app = FastAPI(
     title=settings.service_name,
     version=settings.service_version,
+    description=(
+        "Standalone service that maps symptoms to ICD-11 TM and "
+        "traditional medicine labels with explainable scoring."
+    ),
 )
 
 
@@ -62,7 +66,12 @@ async def validation_exception_handler(
     return JSONResponse(status_code=422, content=payload.model_dump())
 
 
-@app.get(f"{settings.api_prefix}/health", response_model=HealthResponse)
+@app.get(
+    f"{settings.api_prefix}/health",
+    response_model=HealthResponse,
+    tags=["system"],
+    summary="Health check",
+)
 def health() -> HealthResponse:
     return HealthResponse(
         status="ok",
@@ -71,11 +80,16 @@ def health() -> HealthResponse:
     )
 
 
-@app.get(f"{settings.api_prefix}/capabilities", response_model=CapabilitiesResponse)
+@app.get(
+    f"{settings.api_prefix}/capabilities",
+    response_model=CapabilitiesResponse,
+    tags=["system"],
+    summary="Supported sources and features",
+)
 def capabilities() -> CapabilitiesResponse:
     return CapabilitiesResponse(
-        sources=["mock"],
-        features=["traditional_mapping", "fusion_scoring"],
+        sources=settings.supported_sources,
+        features=settings.supported_features,
     )
 
 
@@ -86,6 +100,8 @@ def capabilities() -> CapabilitiesResponse:
         422: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },
+    tags=["mapping"],
+    summary="Map symptoms to ICD and traditional labels",
 )
 def map_conditions(request: Request, payload: MapRequest) -> MapResponse:
     results = map_symptoms(payload.symptoms)
