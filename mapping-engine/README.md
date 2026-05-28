@@ -53,7 +53,7 @@ Response (example):
 				"score": 0.81,
 				"risk": "HIGH"
 			},
-			"match_reason": "mock_lookup",
+			"match_reason": "mock_exact",
 			"source_rank": 3
 		}
 	]
@@ -174,6 +174,47 @@ The value must match `ME_ADMIN_TOKEN`. Admin calls return:
 - `503` with `status: "not_ready"` when an enabled required dependency is missing or broken.
 
 Default MVP readiness requires only the built-in mock source. If `ME_LOCAL_ENABLED=true`, the local SQLite store is checked. If `ME_WHO_ENABLED=true`, `ME_WHO_TOKEN` must be configured.
+
+## Mock Terminology Coverage
+
+The built-in mock source supports exact matching for common MVP symptoms:
+
+- fever
+- headache
+- cough
+- nausea
+- fatigue
+- dizziness
+- abdominal pain
+- joint pain
+- insomnia
+- loss of appetite
+- diarrhea
+- constipation
+- sore throat
+- breathlessness
+- back pain
+- skin rash
+- burning sensation
+- anxiety
+- vomiting
+- nasal congestion
+
+The mock source also supports simple aliases. For example:
+
+- `stomach pain` -> `abdominal pain`
+- `sleeplessness` -> `insomnia`
+- `loose motion` -> `diarrhea`
+- `shortness of breath` -> `breathlessness`
+- `blocked nose` -> `nasal congestion`
+
+Mapping responses include explainability:
+
+- `mock_exact`: direct mock terminology match.
+- `mock_alias`: alias normalized to a canonical mock symptom.
+- `local_lookup`: local SQLite mapping match.
+- `who_lookup`: WHO ICD-11 match.
+- `fallback`: no mapping source matched.
 
 ## Browser / Frontend Communication
 

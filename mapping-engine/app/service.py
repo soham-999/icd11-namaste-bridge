@@ -4,14 +4,9 @@ from typing import List, Optional, Set
 
 from .clients.who_icd import fetch_icd11
 from .repositories.local_mapping_repo import LocalMappingRepository
+from .repositories.mock_mapping_repo import MockLookupResult, MockMappingRepository
 from .schemas import ICDMatch, TraditionalMatch, FusionScore, SymptomMapping
 
-
-MOCK_ICD = {
-    "fever": ("TM001", "Pitta imbalance"),
-    "headache": ("TM002", "Vata disturbance"),
-    "cough": ("TM003", "Kapha imbalance"),
-}
 
 ALLOWED_SOURCES: Set[str] = {"mock", "who", "who-icd11", "local"}
 SOURCE_RANK = {
@@ -22,6 +17,7 @@ SOURCE_RANK = {
 }
 
 _local_repo = LocalMappingRepository()
+_mock_repo = MockMappingRepository()
 
 
 def normalize_symptom(symptom: str) -> str:
@@ -38,6 +34,10 @@ def normalize_sources(sources: Optional[List[str]]) -> Optional[List[str]]:
     return cleaned
 
 
+def lookup_mock(symptom: str) -> Optional[MockLookupResult]:
+    return _mock_repo.find(symptom)
+
+
 def lookup_icd(symptom: str, sources: Optional[List[str]]) -> ICDMatch:
     if sources and "local" in sources:
         local_match = _local_repo.find_icd(symptom)
@@ -49,14 +49,9 @@ def lookup_icd(symptom: str, sources: Optional[List[str]]) -> ICDMatch:
         if who_match:
             return who_match
 
-    if symptom in MOCK_ICD:
-        code, desc = MOCK_ICD[symptom]
-        return ICDMatch(
-            icd_code=code,
-            description=desc,
-            source="mock",
-            confidence=0.85,
-        )
+    mock_match = lookup_mock(symptom)
+    if mock_match:
+        return mock_match.icd
 
     return ICDMatch(
         icd_code="UNKNOWN",
@@ -67,6 +62,10 @@ def lookup_icd(symptom: str, sources: Optional[List[str]]) -> ICDMatch:
 
 
 def map_traditional(symptom: str) -> TraditionalMatch:
+    mock_match = lookup_mock(symptom)
+    if mock_match:
+        return mock_match.traditional
+
     if "fever" in symptom:
         return TraditionalMatch(
             description="Pitta aggravation suspected",
@@ -106,20 +105,30 @@ def map_symptoms(
     for symptom in symptoms:
         clean = normalize_symptom(symptom)
         icd = lookup_icd(clean, sources)
-        traditional = map_traditional(clean)
-        fusion = calculate_fusion(icd.confidence, traditional.confidence)
 
-        if icd.source == "who-icd11":
-            reason = "who_lookup"
-        elif icd.source == "mock":
-            reason = "mock_lookup"
+        mock_match = lookup_mock(clean)
+        if icd.source == "mock" and mock_match:
+            mapped_symptom = mock_match.canonical_symptom
+            traditional = mock_match.traditional
+            reason = mock_match.match_reason
         else:
-            reason = "fallback"
+            mapped_symptom = clean
+            traditional = map_traditional(clean)
+            if icd.source == "who-icd11":
+                reason = "who_lookup"
+            elif icd.source == "local":
+                reason = "local_lookup"
+            elif icd.source == "mock":
+                reason = "mock_exact"
+            else:
+                reason = "fallback"
+
+        fusion = calculate_fusion(icd.confidence, traditional.confidence)
         source_rank = SOURCE_RANK.get(icd.source)
 
         results.append(
             SymptomMapping(
-                symptom=clean,
+                symptom=mapped_symptom,
                 icd=icd,
                 traditional=traditional,
                 fusion=fusion,

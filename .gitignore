@@ -56,8 +56,5 @@ coverage/
 # Mapping engine plans
 mapping-engine/plan/
 
-# Mapping engine tests (local)
-mapping-engine/test/
-
 # Mapping engine local data
 mapping-engine/data/
