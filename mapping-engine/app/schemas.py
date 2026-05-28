@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -64,6 +64,40 @@ class HealthResponse(BaseModel):
 class CapabilitiesResponse(BaseModel):
     sources: List[str]
     features: List[str]
+
+
+class ContractEndpoint(BaseModel):
+    method: str
+    path: str
+    request_schema: Optional[str] = None
+    response_schema: str
+    error_schema: Optional[str] = "ErrorResponse"
+    required_headers: List[str] = Field(default_factory=list)
+    optional_headers: List[str] = Field(default_factory=list)
+
+
+class ContractResponse(BaseModel):
+    request_id: str
+    service: str
+    version: str
+    api_prefix: str
+    endpoints: List[ContractEndpoint]
+    schemas: Dict[str, Any]
+    required_headers: List[str]
+    optional_headers: List[str]
+
+
+class ReadinessCheck(BaseModel):
+    name: str
+    status: str
+    required: bool
+    message: str
+
+
+class ReadinessResponse(BaseModel):
+    request_id: str
+    status: str
+    checks: List[ReadinessCheck]
 
 
 class ErrorDetail(BaseModel):

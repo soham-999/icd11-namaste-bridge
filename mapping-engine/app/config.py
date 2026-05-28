@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     local_enabled: bool = False
     local_db_path: str = "./data/mappings.db"
     admin_enabled: bool = False
+    admin_token: str | None = None
     cors_allow_origins: List[str] = ["*"]
 
 

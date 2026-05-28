@@ -192,6 +192,29 @@ def main() -> int:
         else:
             report.fail(f"GET /v1/capabilities expected 200 CapabilitiesResponse, got {status}: {body}")
 
+        status, _, body = request_json("GET", f"{base_url}/v1/ready")
+        if status == 200 and has_keys(body, ["request_id", "status", "checks"]) and body["status"] == "ready":
+            report.pass_("GET /v1/ready returns ready ReadinessResponse")
+        elif status == 503 and has_keys(body, ["request_id", "status", "checks"]):
+            report.fail(f"GET /v1/ready reports not_ready: {body}")
+        else:
+            report.fail(f"GET /v1/ready expected ReadinessResponse, got {status}: {body}")
+
+        status, _, body = request_json("GET", f"{base_url}/v1/contract")
+        has_map_contract = (
+            has_keys(body, ["request_id", "service", "version", "api_prefix", "endpoints", "schemas"])
+            and "MapRequest" in body["schemas"]
+            and "MapResponse" in body["schemas"]
+            and any(
+                endpoint.get("method") == "POST" and endpoint.get("path") == "/v1/map"
+                for endpoint in body["endpoints"]
+            )
+        )
+        if status == 200 and has_map_contract:
+            report.pass_("GET /v1/contract exposes mapping-engine API contract")
+        else:
+            report.fail(f"GET /v1/contract expected contract metadata, got {status}: {body}")
+
         request_id = "contract-test-mapping-001"
         status, headers, body = request_json(
             "POST",

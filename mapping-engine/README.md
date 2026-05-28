@@ -5,12 +5,16 @@ Standalone service for mapping symptoms to ICD-11 TM and traditional medicine la
 ## Endpoints
 
 - `GET /v1/health`
+- `GET /v1/ready`
 - `GET /v1/capabilities`
+- `GET /v1/contract`
 - `POST /v1/map`
 
 ## Phase 0 Readiness
 
 - Mapping Engine owns the API contract and versioning.
+- `/v1/contract` is the source of truth for backend/frontend schema integration.
+- `/v1/ready` reports whether enabled dependencies are configured correctly.
 - Deterministic, explainable responses with request-level tracing (`x-request-id`).
 - Mock sources only; external ICD sources are deferred to Phase 1.
 
@@ -73,6 +77,7 @@ Environment variables (prefix `ME_`):
 - `ME_LOCAL_ENABLED` (default: false)
 - `ME_LOCAL_DB_PATH` (default: ./data/mappings.db)
 - `ME_ADMIN_ENABLED` (default: false)
+- `ME_ADMIN_TOKEN` (default: unset)
 - `ME_CORS_ALLOW_ORIGINS` (default: ["*"])
 
 ## Run Locally
@@ -88,7 +93,9 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 The service will be available at:
 
 - `http://localhost:8001/v1/health`
+- `http://localhost:8001/v1/ready`
 - `http://localhost:8001/v1/capabilities`
+- `http://localhost:8001/v1/contract`
 - `http://localhost:8001/v1/map`
 - `http://localhost:8001/docs`
 
@@ -96,6 +103,10 @@ The service will be available at:
 
 ```bash
 curl http://localhost:8001/v1/health
+
+curl http://localhost:8001/v1/ready
+
+curl http://localhost:8001/v1/contract
 
 curl -X POST http://localhost:8001/v1/map \
 	-H "Content-Type: application/json" \
@@ -117,10 +128,87 @@ When prompted, enter:
 http://localhost:8001
 ```
 
-This checks health, capabilities, mapping response schema, `x-request-id`, validation errors, and admin mapping response shape.
+This checks health, readiness, contract metadata, capabilities, mapping response schema, `x-request-id`, validation errors, and admin mapping response shape.
+
+## Integration Contract
+
+`GET /v1/contract` exposes the official mapping-engine API contract for other services. Backend and frontend integrations should align to these schema names:
+
+- `MapRequest`
+- `MapResponse`
+- `ErrorResponse`
+- `HealthResponse`
+- `ReadinessResponse`
+- `CapabilitiesResponse`
+
+The required mapping endpoint is:
+
+```text
+POST /v1/map
+```
+
+The optional request header is:
+
+```text
+x-request-id
+```
+
+If supplied, the service echoes it in the response body and response header.
+
+Admin endpoints also require:
+
+```text
+x-admin-token
+```
+
+The value must match `ME_ADMIN_TOKEN`. Admin calls return:
+
+- `401 admin_auth_required` when `ME_ADMIN_TOKEN` or `x-admin-token` is missing.
+- `403 admin_auth_invalid` when `x-admin-token` is wrong.
+
+## Readiness
+
+`GET /v1/ready` returns:
+
+- `200` with `status: "ready"` when required enabled dependencies are usable.
+- `503` with `status: "not_ready"` when an enabled required dependency is missing or broken.
+
+Default MVP readiness requires only the built-in mock source. If `ME_LOCAL_ENABLED=true`, the local SQLite store is checked. If `ME_WHO_ENABLED=true`, `ME_WHO_TOKEN` must be configured.
 
 ## Browser / Frontend Communication
 
 CORS is enabled by default for MVP testing so separately hosted frontend and backend services can call the mapping engine.
 
 For stricter deployments, set allowed origins through `ME_CORS_ALLOW_ORIGINS`.
+
+## Admin Mapping API
+
+Admin mapping endpoints are disabled by default. To enable them locally:
+
+```bash
+ME_LOCAL_ENABLED=true ME_ADMIN_ENABLED=true ME_ADMIN_TOKEN=dev-admin-token \
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
+```
+
+List mappings:
+
+```bash
+curl http://localhost:8001/v1/admin/mappings \
+	-H "x-admin-token: dev-admin-token"
+```
+
+Upsert a mapping:
+
+```bash
+curl -X POST http://localhost:8001/v1/admin/mappings \
+	-H "Content-Type: application/json" \
+	-H "x-admin-token: dev-admin-token" \
+	-d "{\"symptom\":\"nausea\",\"icd_code\":\"TM020\",\"description\":\"Agni imbalance\"}"
+```
+
+Delete a mapping:
+
+```bash
+curl -X DELETE http://localhost:8001/v1/admin/mappings/nausea \
+	-H "x-admin-token: dev-admin-token"
+```
