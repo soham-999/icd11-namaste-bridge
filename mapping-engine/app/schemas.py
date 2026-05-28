@@ -7,7 +7,10 @@ class MapRequest(BaseModel):
         ..., min_length=1, examples=["fever", "headache"]
     )
     locale: str = "en"
-    sources: Optional[List[str]] = None
+    sources: Optional[List[str]] = Field(
+        default=None,
+        description="Limit lookups to these sources (e.g., mock, local, who-icd11).",
+    )
 
 
 class ICDMatch(BaseModel):
@@ -34,6 +37,7 @@ class SymptomMapping(BaseModel):
     traditional: TraditionalMatch
     fusion: FusionScore
     match_reason: Optional[str] = None
+    source_rank: Optional[int] = None
 
 
 class MapResponse(BaseModel):
@@ -63,3 +67,32 @@ class ErrorDetail(BaseModel):
 class ErrorResponse(BaseModel):
     request_id: str
     error: ErrorDetail
+
+
+class AdminMapping(BaseModel):
+    symptom: str
+    icd_code: str
+    description: Optional[str] = None
+
+
+class AdminUpsertRequest(BaseModel):
+    symptom: str
+    icd_code: str
+    description: Optional[str] = None
+
+
+class AdminUpsertResponse(BaseModel):
+    request_id: str
+    item: AdminMapping
+
+
+class AdminListResponse(BaseModel):
+    request_id: str
+    total: int
+    items: List[AdminMapping]
+
+
+class AdminDeleteResponse(BaseModel):
+    request_id: str
+    deleted: bool
+    message: str

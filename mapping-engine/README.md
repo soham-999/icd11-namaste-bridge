@@ -49,7 +49,8 @@ Response (example):
 				"score": 0.81,
 				"risk": "HIGH"
 			},
-			"match_reason": "mock_lookup"
+			"match_reason": "mock_lookup",
+			"source_rank": 2
 		}
 	]
 }
@@ -58,6 +59,19 @@ Response (example):
 ## Notes
 
 - The service echoes `x-request-id` in responses for traceability.
+
+## Configuration
+
+Environment variables (prefix `ME_`):
+
+- `ME_WHO_ENABLED` (default: false)
+- `ME_WHO_TOKEN` (default: unset)
+- `ME_WHO_API_BASE_URL` (default: https://id.who.int/icd)
+- `ME_WHO_API_VERSION` (default: v2)
+- `ME_CACHE_TTL_SECONDS` (default: 900)
+- `ME_LOCAL_ENABLED` (default: false)
+- `ME_LOCAL_DB_PATH` (default: ./data/mappings.db)
+- `ME_ADMIN_ENABLED` (default: false)
 
 ## Run (dev)
 

@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     request_timeout_seconds: int = 5
     supported_sources: List[str] = ["mock"]
     supported_features: List[str] = ["traditional_mapping", "fusion_scoring"]
+    who_enabled: bool = False
+    cache_ttl_seconds: int = 900
+    who_max_retries: int = 1
+    local_enabled: bool = False
+    local_db_path: str = "./data/mappings.db"
+    admin_enabled: bool = False
 
 
 settings = Settings()
