@@ -1,8 +1,9 @@
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .config import settings
 from .clients.who_icd import who_available
@@ -31,7 +32,28 @@ app = FastAPI(
     ),
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_allow_origins,
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "x-request-id"],
+    expose_headers=["x-request-id"],
+)
+
 _local_repo = LocalMappingRepository()
+
+
+def _validation_error_details(exc: RequestValidationError):
+    details = []
+    for error in exc.errors():
+        safe_error = dict(error)
+        if "ctx" in safe_error:
+            safe_error["ctx"] = {
+                key: str(value)
+                for key, value in safe_error["ctx"].items()
+            }
+        details.append(safe_error)
+    return details
 
 
 @app.middleware("http")
@@ -68,7 +90,7 @@ async def validation_exception_handler(
         error=ErrorDetail(
             code="validation_error",
             message="Request validation failed",
-            details=exc.errors(),
+            details=_validation_error_details(exc),
         ),
     )
     return JSONResponse(status_code=422, content=payload.model_dump())
@@ -194,7 +216,7 @@ def upsert_mapping(request: Request, payload: AdminUpsertRequest):
 
 
 @app.delete(
-    f"{settings.api_prefix}/admin/mappings/{symptom}",
+    f"{settings.api_prefix}/admin/mappings/{{symptom}}",
     responses={
         200: {"model": AdminDeleteResponse},
         503: {"model": ErrorResponse},

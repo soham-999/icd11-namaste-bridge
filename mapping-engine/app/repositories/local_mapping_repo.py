@@ -10,8 +10,12 @@ class LocalMappingRepository:
     def __init__(self) -> None:
         init_db()
 
+    def _get_connection(self):
+        init_db()
+        return get_connection()
+
     def find_icd(self, symptom: str) -> Optional[ICDMatch]:
-        conn = get_connection()
+        conn = self._get_connection()
         if not conn:
             return None
         row = conn.execute(
@@ -29,7 +33,7 @@ class LocalMappingRepository:
         )
 
     def upsert(self, symptom: str, icd_code: str, description: str | None) -> Optional[AdminMapping]:
-        conn = get_connection()
+        conn = self._get_connection()
         if not conn:
             return None
         with conn:
@@ -45,7 +49,7 @@ class LocalMappingRepository:
         )
 
     def delete(self, symptom: str) -> bool:
-        conn = get_connection()
+        conn = self._get_connection()
         if not conn:
             return False
         with conn:
@@ -57,7 +61,7 @@ class LocalMappingRepository:
         return cursor.rowcount > 0
 
     def list(self, limit: int = 50, offset: int = 0) -> List[AdminMapping]:
-        conn = get_connection()
+        conn = self._get_connection()
         if not conn:
             return []
         rows = conn.execute(

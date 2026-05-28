@@ -50,7 +50,7 @@ Response (example):
 				"risk": "HIGH"
 			},
 			"match_reason": "mock_lookup",
-			"source_rank": 2
+			"source_rank": 3
 		}
 	]
 }
@@ -59,6 +59,7 @@ Response (example):
 ## Notes
 
 - The service echoes `x-request-id` in responses for traceability.
+- `symptoms` must contain at least one non-empty string; blank entries return a validation error.
 
 ## Configuration
 
@@ -72,10 +73,54 @@ Environment variables (prefix `ME_`):
 - `ME_LOCAL_ENABLED` (default: false)
 - `ME_LOCAL_DB_PATH` (default: ./data/mappings.db)
 - `ME_ADMIN_ENABLED` (default: false)
+- `ME_CORS_ALLOW_ORIGINS` (default: ["*"])
 
-## Run (dev)
+## Run Locally
+
+From the repository root:
 
 ```bash
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8001
+cd mapping-engine
+python -m pip install -r requirements.txt
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 ```
+
+The service will be available at:
+
+- `http://localhost:8001/v1/health`
+- `http://localhost:8001/v1/capabilities`
+- `http://localhost:8001/v1/map`
+- `http://localhost:8001/docs`
+
+## Smoke Test
+
+```bash
+curl http://localhost:8001/v1/health
+
+curl -X POST http://localhost:8001/v1/map \
+	-H "Content-Type: application/json" \
+	-H "x-request-id: smoke-test-1" \
+	-d "{\"symptoms\":[\"fever\",\"cough\"]}"
+```
+
+## Contract Test
+
+From the repository root, run Soham's mapping-engine contract tester:
+
+```bash
+python test/mapping_engine_test.py
+```
+
+When prompted, enter:
+
+```text
+http://localhost:8001
+```
+
+This checks health, capabilities, mapping response schema, `x-request-id`, validation errors, and admin mapping response shape.
+
+## Browser / Frontend Communication
+
+CORS is enabled by default for MVP testing so separately hosted frontend and backend services can call the mapping engine.
+
+For stricter deployments, set allowed origins through `ME_CORS_ALLOW_ORIGINS`.

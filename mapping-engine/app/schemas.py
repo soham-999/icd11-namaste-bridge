@@ -1,5 +1,5 @@
 from typing import Any, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class MapRequest(BaseModel):
@@ -11,6 +11,14 @@ class MapRequest(BaseModel):
         default=None,
         description="Limit lookups to these sources (e.g., mock, local, who-icd11).",
     )
+
+    @field_validator("symptoms")
+    @classmethod
+    def symptoms_must_be_non_empty(cls, symptoms: List[str]) -> List[str]:
+        cleaned = [symptom.strip() for symptom in symptoms]
+        if any(not symptom for symptom in cleaned):
+            raise ValueError("Symptoms must be non-empty strings")
+        return cleaned
 
 
 class ICDMatch(BaseModel):
