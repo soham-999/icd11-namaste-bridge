@@ -1,0 +1,17 @@
+/* Default App Styling */
+.App {
+  text-align: center;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Base button animations if any */
+button {
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:hover {
+  border-color: #646cff;
+}
