@@ -1,9 +1,17 @@
 import React, { useState } from 'react';
 import './App.css';
+import Dashboard from'./Dashboard'; // Naye dashboard ko sahi se import kiya
 
-function App() {
+export default function App() {
   const [count, setCount] = useState(0);
+  const [showDashboard, setShowDashboard] = useState(false); // Toggle state
 
+  // Agar button click hua hai, toh dashboard dikhao
+  if (showDashboard) {
+    return <Dashboard onBack={() => setShowDashboard(false)} />;
+  }
+
+  // Aapka puraana core code
   return (
     <div className="App">
       <h1>NAMASTE-ICD Frontend</h1>
@@ -13,13 +21,13 @@ function App() {
         <button onClick={() => setCount((count) => count + 1)}>
           Count is: {count}
         </button>
+        <p>Frontend server is running successfully!</p>
       </div>
-      
-      <p className="read-the-docs">
-        Frontend server is running successfully!
-      </p>
+
+      {/* Dashboard par jaane ka button */}
+      <button className="view-dash-btn" onClick={() => setShowDashboard(true)}>
+        📊 Open Mapping Logs Dashboard
+      </button>
     </div>
   );
 }
-
-export default App;
