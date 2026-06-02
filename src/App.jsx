@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getICDBySymptom } from "./api";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { LayoutDashboard, Search, FileBarChart, Layers, Settings, Bell, ChevronRight, Activity, Database, CheckCircle, AlertCircle, RefreshCw, Filter, ArrowUpRight } from "lucide-react";
 import { kpiData, trafficData, chapterData, topDiagnoses } from "./data";
@@ -6,6 +7,22 @@ import { kpiData, trafficData, chapterData, topDiagnoses } from "./data";
 export default function App() {
   const [activeTab, setActiveTab] = useState("Overview");
   const [searchQuery, setSearchQuery] = useState("");
+  const [icdResult, setIcdResult] = useState(null);
+
+const handleICDSearch = async () => {
+  if (!searchQuery) return;
+
+  try {
+    const result = await getICDBySymptom(searchQuery);
+
+    console.log(result);
+
+    setIcdResult(result);
+  } catch (err) {
+    console.error(err);
+    alert("Backend connection failed");
+  }
+};
 
   const COLORS = ["#0d9488", "#06b6d4", "#10b981", "#3b82f6", "#6366f1"];
 
@@ -168,7 +185,7 @@ export default function App() {
                   <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
                     <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Daily Mapping Volume Log</h3>
                   </div>
-                  <div className="h-64 w-full">
+                  <div style={{ width: "100%", height: 300 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={trafficData} barSize={24}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -185,7 +202,7 @@ export default function App() {
                   <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
                     <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Diseases by ICD Chapter</h3>
                   </div>
-                  <div className="h-44 w-full flex items-center justify-center relative">
+                  <div style={{ width: "100%", height: 250 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie data={chapterData} cx="50%" cy="50%" innerRadius={55} outerRadius={72} paddingAngle={3} dataKey="value">
@@ -266,7 +283,17 @@ export default function App() {
                   Advanced Filter
                 </button>
               </div>
+{icdResult && (
+  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+    <h3 className="font-bold text-lg mb-4">
+      Backend Result
+    </h3>
 
+    <pre className="bg-slate-100 p-4 rounded-lg overflow-auto text-sm">
+      {JSON.stringify(icdResult, null, 2)}
+    </pre>
+  </div>
+)}
               {/* Results Terminal Block */}
               <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">

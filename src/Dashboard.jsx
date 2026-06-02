@@ -48,6 +48,9 @@ export default function Dashboard({ onBack }) {
 
         <div className="content-body">
           <div className="welcome-header">
+            <h1 style={{color:"red"}}>
+THIS IS DASHBOARD.JSX
+</h1>
             <h3>Mapping Logs & Analytics</h3>
             <p>Monitor real-time EHR integration and ICD-11 terminology alignment status.</p>
           </div>
