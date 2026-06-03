@@ -1,35 +1,78 @@
-// 103883.jpg ke mutabik main cards ka data
-export const kpiData = [
-  { title: "Total Mapped Patients", value: "1,248", change: "↗ 8.2%" },
-  { title: "Pending Mappings", value: "286", change: "↗ 5.1%" },
-  { title: "ICD-11 Searches (Today)", value: "132", change: "↘ -3.7%" },
-  { title: "Mapping Accuracy", value: "94.5%", change: "↗ +1.4%" }
+// src/data.js
+
+export const interoperabilityMetrics = [
+  {
+    title: "Total Synced Concepts",
+    value: "14,820",
+    change: "+12.3%",
+    isUp: true
+  },
+  {
+    title: "API Engine Latency",
+    value: "34ms",
+    change: "-4.1%",
+    isUp: true
+  },
+  {
+    title: "Active EHR Nodes",
+    value: "18 Active",
+    change: "Stable",
+    isUp: true
+  },
+  {
+    title: "Mapping Mismatches",
+    value: "2",
+    change: "-48.2%",
+    isUp: true
+  }
 ];
 
-// 103885.jpg ke mutabik Daily Volume Bar Chart ka data
-export const trafficData = [
-  { name: "May 13", value: 130 },
-  { name: "May 14", value: 142 },
-  { name: "May 15", value: 155 },
-  { name: "May 16", value: 162 },
-  { name: "May 17", value: 150 },
-  { name: "May 18", value: 148 },
-  { name: "May 19", value: 158 }
+export const mappingActivityData = [
+  { day: "Mon May 25", val: 420, pct: "45%" },
+  { day: "Tue May 26", val: 510, pct: "55%" },
+  { day: "Wed May 27", val: 490, pct: "52%" },
+  { day: "Thu May 28", val: 680, pct: "75%" },
+  { day: "Fri May 29", val: 720, pct: "80%" },
+  { day: "Sat May 30", val: 310, pct: "35%" },
+  { day: "Sun May 31", val: 890, pct: "95%" }
 ];
 
-// 103884.jpg / 103886.jpg ke mutabik Diseases Pie Chart ka data
-export const chapterData = [
-  { name: "Infectious Diseases", value: 35 },
-  { name: "Neoplasms (Tumors)", value: 25 },
-  { name: "Cardiology (Circulatory)", value: 20 },
-  { name: "Respiratory System", value: 15 },
-  { name: "Others", value: 5 }
+export const terminologyDistribution = [
+  { name: "Ayurveda (AYU)", pct: 45, color: "bg-emerald-500", strokeDash: "45 100", strokeOffset: "0" },
+  { name: "Unani (UNA)", pct: 25, color: "bg-blue-600", strokeDash: "25 100", strokeOffset: "-45" },
+  { name: "Siddha (SID)", pct: 15, color: "bg-indigo-600", strokeDash: "15 100", strokeOffset: "-70" },
+  { name: "Homeopathy (HOM)", pct: 10, color: "bg-amber-500", strokeDash: "10 100", strokeOffset: "-85" },
+  { name: "Sowa-Rigpa (SOW)", pct: 5, color: "bg-sky-500", strokeDash: "5 100", strokeOffset: "-95" }
 ];
 
-// 103887.jpg ke mutabik Top Mapped Diagnoses Table ka data
-export const topDiagnoses = [
-  { code: "BA00.0", diagnosis: "Essential Hypertension", cases: 320, percentage: "18%" },
-  { code: "CA40.0", diagnosis: "Acute Respiratory Infection", cases: 280, percentage: "16%" },
-  { code: "5A11.0", diagnosis: "Type 2 Diabetes Mellitus", cases: 240, percentage: "13%" },
-  { code: "CA20.1", diagnosis: "Bacterial Pneumonia", cases: 180, percentage: "10%" }
+export const recentMappings = [
+  { source: "Amavata", target: "1B10.2", status: "Success" },
+  { source: "Tamaka Shwasa", target: "CA23.0", status: "Success" },
+  { source: "Zeequn Nafas", target: "CA23.0", status: "Success" },
+  { source: "Sandhivata", target: "FA01.Z", status: "Success" },
+  { source: "Kasa", target: "MD11", status: "Pending" }
+];
+
+export const systemAuditLogs = [
+  {
+    id: 1,
+    type: "info",
+    title: "FHIR Bundle Validated",
+    time: "2 mins ago",
+    msg: "ConceptMap resource bound successfully to local EHR node."
+  },
+  {
+    id: 2,
+    type: "low",
+    title: "Unmapped Term Flagged",
+    time: "12 mins ago",
+    msg: "Local term 'Madhumeha' requested mapping optimization query."
+  },
+  {
+    id: 3,
+    type: "high",
+    title: "Connection Alert",
+    time: "1 hr ago",
+    msg: "External clinic network node dropped handshake packets intermittently."
+  }
 ];
