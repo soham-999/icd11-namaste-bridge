@@ -1,10 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {
-  getICDBySymptom,
-  getDashboardStats,
-  getTopDiagnoses,
-  getPatients
-} from "./api";
+import React, { useState } from "react";
+import { getICDBySymptom } from "./api";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { LayoutDashboard, Search, FileBarChart, Layers, Settings, Bell, ChevronRight, Activity, Database, CheckCircle, AlertCircle, RefreshCw, Filter, ArrowUpRight } from "lucide-react";
 import { kpiData, trafficData, chapterData, topDiagnoses } from "./data";
@@ -13,9 +8,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("Overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [icdResult, setIcdResult] = useState(null);
-const [dashboardStats, setDashboardStats] = useState(null);
-const [diagnoses, setDiagnoses] = useState([]);
-const [patients, setPatients] = useState([]);
 
 const handleICDSearch = async () => {
   if (!searchQuery) return;
@@ -127,7 +119,10 @@ const handleICDSearch = async () => {
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Live Synced Engine
             </div>
-           
+            <button className="p-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors shadow-sm relative">
+              <Bell size={18} />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-teal-500 rounded-full"></span>
+            </button>
           </div>
         </header>
 
@@ -190,13 +185,7 @@ const handleICDSearch = async () => {
                   <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
                     <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Daily Mapping Volume Log</h3>
                   </div>
-                  <div
-  style={{
-    width: "100%",
-    height: "300px",
-    minHeight: "300px"
-  }}
->
+                  <div style={{ width: "100%", height: 300 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={trafficData} barSize={24}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -213,13 +202,7 @@ const handleICDSearch = async () => {
                   <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
                     <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Diseases by ICD Chapter</h3>
                   </div>
-                 <div
-  style={{
-    width: "100%",
-    height: "250px",
-    minHeight: "250px"
-  }}
->
+                  <div style={{ width: "100%", height: 250 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie data={chapterData} cx="50%" cy="50%" innerRadius={55} outerRadius={72} paddingAngle={3} dataKey="value">
@@ -282,125 +265,77 @@ const handleICDSearch = async () => {
 
           {/* DYNAMIC FUNCTIONAL ICD-11 FINDER PANEL */}
           {activeTab === "ICD-11 Finder" && (
-  <div className="flex flex-col gap-6 w-full animate-fadeIn">
-
-    {/* Search Control Box */}
-    <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-
-      <div className="flex gap-2 w-full md:max-w-xl">
-
-        <input
-          type="text"
-          placeholder="Search by Disease name or ICD code..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleICDSearch();
-            }
-          }}
-          className="flex-1 bg-slate-50 text-slate-800 px-4 py-3 rounded-xl border border-slate-200"
-        />
-
-        <button
-          onClick={handleICDSearch}
-          className="bg-teal-600 text-white px-4 py-3 rounded-xl"
-        >
-          Search ICD
-        </button>
-
-      </div>
-
-      <button className="flex items-center gap-2 px-4 py-3 bg-slate-100 border border-slate-200 text-slate-700 font-semibold rounded-xl text-xs hover:bg-slate-200 transition-colors">
-        <Filter size={16} />
-        Advanced Filter
-      </button>
-
-    </div>
-
-    {/* Backend Response */}
-    {icdResult && (
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <h3 className="font-bold text-lg mb-4">
-          Backend Result
-        </h3>
-
-        <pre className="bg-slate-100 p-4 rounded-lg overflow-auto text-sm">
-          {JSON.stringify(icdResult, null, 2)}
-        </pre>
-      </div>
-    )}
-
-    {/* Results Terminal Block */}
-    <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
-
-      <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
-          Found Entities Registry ({filteredResults.length})
-        </h3>
-      </div>
-
-      {filteredResults.length > 0 ? (
-        <div className="flex flex-col divide-y divide-slate-100">
-
-          {filteredResults.map((result, idx) => (
-            <div
-              key={idx}
-              className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors"
-            >
-
-              <div className="flex items-start gap-4">
-
-                <div className="bg-teal-50 border border-teal-100 font-mono text-teal-700 font-bold px-3 py-1.5 rounded-xl text-sm shrink-0">
-                  {result.code}
+            <div className="flex flex-col gap-6 w-full animate-fadeIn">
+              {/* Search Control Box */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div className="relative w-full md:max-w-xl">
+                  <Search className="absolute left-4 top-3.5 text-slate-400" size={18} />
+                  <input 
+                    type="text" 
+                    placeholder="Search by Disease name or ICD code (e.g., Hypertension, BA00.0)..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-slate-50 text-slate-800 pl-11 pr-4 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                  />
                 </div>
-
-                <div>
-                  <h4 className="font-bold text-slate-900 text-base">
-                    {result.title}
-                  </h4>
-
-                  <p className="text-slate-400 text-xs font-medium mt-0.5">
-                    {result.chapter}
-                  </p>
-                </div>
-
-              </div>
-
-              <div className="flex items-center gap-3 shrink-0">
-
-                <span
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
-                    result.status === "Verified"
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                      : "bg-amber-50 text-amber-700 border-amber-100"
-                  }`}
-                >
-                  {result.status}
-                </span>
-
-                <button className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all">
-                  <ArrowUpRight size={18} />
+                <button className="flex items-center gap-2 px-4 py-3 bg-slate-100 border border-slate-200 text-slate-700 font-semibold rounded-xl text-xs hover:bg-slate-200 transition-colors w-full md:w-auto justify-center">
+                  <Filter size={16} />
+                  Advanced Filter
                 </button>
-
               </div>
+{icdResult && (
+  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+    <h3 className="font-bold text-lg mb-4">
+      Backend Result
+    </h3>
 
-            </div>
-          ))}
-
-        </div>
-      ) : (
-        <div className="p-12 text-center">
-          <p className="text-slate-400 text-sm font-medium">
-            No active ICD codes match your current query parameter.
-          </p>
-        </div>
-      )}
-
-    </div>
-
+    <pre className="bg-slate-100 p-4 rounded-lg overflow-auto text-sm">
+      {JSON.stringify(icdResult, null, 2)}
+    </pre>
   </div>
-)}{/* Fallback for other modules */}
+)}
+              {/* Results Terminal Block */}
+              <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Found Entities Registry ({filteredResults.length})</h3>
+                </div>
+                
+                {filteredResults.length > 0 ? (
+                  <div className="flex flex-col divide-y divide-slate-100">
+                    {filteredResults.map((result, idx) => (
+                      <div key={idx} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
+                        <div className="flex items-start gap-4">
+                          <div className="bg-teal-50 border border-teal-100 font-mono text-teal-700 font-bold px-3 py-1.5 rounded-xl text-sm shrink-0">
+                            {result.code}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-base">{result.title}</h4>
+                            <p className="text-slate-400 text-xs font-medium mt-0.5">{result.chapter}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                            result.status === "Verified" ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-amber-50 text-amber-700 border-amber-100"
+                          }`}>
+                            {result.status}
+                          </span>
+                          <button className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all">
+                            <ArrowUpRight size={18} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-12 text-center">
+                    <p className="text-slate-400 text-sm font-medium">No active ICD codes match your current query parameter.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Fallback for other modules */}
           {activeTab !== "Overview" && activeTab !== "ICD-11 Finder" && (
             <div className="bg-white p-12 rounded-2xl border border-slate-200/60 shadow-sm text-center">
               <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mx-auto mb-3">

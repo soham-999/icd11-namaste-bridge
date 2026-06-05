@@ -1,5 +1,14 @@
 # Node.js
-
+node_modules/
+dist/
+.vscode/
+NAMASTE-ICD-fresh/
+namaste-icd-dashboard/
+node_modules/
+dist/
+build/
+.env
+.DS_Store
 node_modules/
 npm-debug.log*
 yarn-debug.log*
