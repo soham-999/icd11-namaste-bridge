@@ -76,3 +76,21 @@ export const systemAuditLogs = [
     msg: "External clinic network node dropped handshake packets intermittently."
   }
 ];
+export const kpiData = interoperabilityMetrics;
+
+export const trafficData = mappingActivityData.map(item => ({
+  name: item.day,
+  value: item.val
+}));
+
+export const chapterData = terminologyDistribution.map(item => ({
+  name: item.name,
+  value: item.pct
+}));
+
+export const topDiagnoses = recentMappings.map(item => ({
+  code: item.target,
+  diagnosis: item.source,
+  cases: "N/A",
+  percentage: item.status
+}));

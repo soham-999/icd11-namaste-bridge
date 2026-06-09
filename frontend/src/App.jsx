@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+/*import React, { useState, useEffect } from "react";
 import {
   getICDBySymptom,
   getDashboardStats,
@@ -7,7 +7,7 @@ import {
 } from "./api";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { LayoutDashboard, Search, FileBarChart, Layers, Settings, Bell, ChevronRight, Activity, Database, CheckCircle, AlertCircle, RefreshCw, Filter, ArrowUpRight } from "lucide-react";
-import { kpiData, trafficData, chapterData, topDiagnoses } from "./data";
+import { interoperabilityMetrics, mappingActivityData, terminologyDistribution, recentMappings } from "./data";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("Overview");
@@ -51,8 +51,8 @@ const handleICDSearch = async () => {
   return (
     <div className="flex h-screen w-screen bg-[#f8fafc] text-slate-800 font-sans overflow-hidden">
       
-      {/* Sidebar */}
-      <div className="w-64 bg-[#0f172a] text-slate-200 flex flex-col justify-between p-4 shrink-0 border-r border-slate-800 shadow-xl">
+      {/* Sidebar }
+      /*<div className="w-64 bg-[#0f172a] text-slate-200 flex flex-col justify-between p-4 shrink-0 border-r border-slate-800 shadow-xl">
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-3 px-3 py-4 border-b border-slate-800">
             <div className="bg-gradient-to-tr from-teal-500 to-cyan-400 text-white p-2 rounded-xl font-bold text-xl w-10 h-10 flex items-center justify-center shadow-lg shadow-teal-500/20">
@@ -106,11 +106,11 @@ const handleICDSearch = async () => {
         </div>
       </div>
 
-      {/* Main Container */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#f1f5f9]">
+      {/* Main Container }
+      /*<div className="flex-1 flex flex-col overflow-hidden bg-[#f1f5f9]">
         
-        {/* Top Header Row */}
-        <header className="flex justify-between items-center px-8 py-5 bg-white border-b border-slate-200/80 shadow-sm shrink-0">
+        {/* Top Header Row }
+       /* <header className="flex justify-between items-center px-8 py-5 bg-white border-b border-slate-200/80 shadow-sm shrink-0">
           <div>
             <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
               {activeTab === "Overview" ? "Clinical Mapping Workspace" : "ICD-11 Real-time Finder"}
@@ -131,15 +131,15 @@ const handleICDSearch = async () => {
           </div>
         </header>
 
-        {/* Workspace Panels */}
-        <main className="flex-1 overflow-y-auto p-8 flex flex-col gap-6 max-w-7xl w-full mx-auto">
+        {/* Workspace Panels }*/
+       /* <main className="flex-1 overflow-y-auto p-8 flex flex-col gap-6 max-w-7xl w-full mx-auto">
           
-          {/* OVERVIEW PANEL */}
-          {activeTab === "Overview" && (
+          {/* OVERVIEW PANEL }*
+          /*{activeTab === "Overview" && (
             <>
-              {/* KPI Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                {kpiData.map((kpi, idx) => (
+              {/* KPI Grid }*/
+             /* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                {interoperabilityMetrics.map((kpi, idx) => (
                   <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-between">
                     <div className="flex justify-between items-start">
                       <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">{kpi.title}</span>
@@ -160,8 +160,8 @@ const handleICDSearch = async () => {
                 ))}
               </div>
 
-              {/* System Alerts */}
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col gap-4">
+                {/* System Alerts }*/
+            /*  <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col gap-4">
                 <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
                   <AlertCircle size={18} className="text-teal-600" />
                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">System Notifications & Validation Logs</h3>
@@ -184,8 +184,8 @@ const handleICDSearch = async () => {
                 </div>
               </div>
 
-              {/* Charts Section */}
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+              {/* Charts Section }*/
+             /* <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm lg:col-span-3 flex flex-col">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
                     <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Daily Mapping Volume Log</h3>
@@ -222,8 +222,8 @@ const handleICDSearch = async () => {
 >
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <Pie data={chapterData} cx="50%" cy="50%" innerRadius={55} outerRadius={72} paddingAngle={3} dataKey="value">
-                          {chapterData.map((entry, index) => (
+                        <Pie data={terminologyDistribution} cx="50%" cy="50%" innerRadius={55} outerRadius={72} paddingAngle={3} dataKey="value">
+                          {terminologyDistribution.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
@@ -245,8 +245,8 @@ const handleICDSearch = async () => {
                 </div>
               </div>
 
-              {/* Table */}
-              <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden flex flex-col">
+              {/* Table */
+             /* <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden flex flex-col">
                 <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Top ICD-11 Mapped Diagnoses Index</h3>
                 </div>
@@ -280,12 +280,12 @@ const handleICDSearch = async () => {
             </>
           )}
 
-          {/* DYNAMIC FUNCTIONAL ICD-11 FINDER PANEL */}
-          {activeTab === "ICD-11 Finder" && (
+          {/* DYNAMIC FUNCTIONAL ICD-11 FINDER PANEL }
+         /* {activeTab === "ICD-11 Finder" && (
   <div className="flex flex-col gap-6 w-full animate-fadeIn">
 
-    {/* Search Control Box */}
-    <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+    {/* Search Control Box }
+    /*<div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
 
       <div className="flex gap-2 w-full md:max-w-xl">
 
@@ -318,8 +318,8 @@ const handleICDSearch = async () => {
 
     </div>
 
-    {/* Backend Response */}
-    {icdResult && (
+    {/* Backend Response }
+    /*{icdResult && (
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <h3 className="font-bold text-lg mb-4">
           Backend Result
@@ -331,8 +331,8 @@ const handleICDSearch = async () => {
       </div>
     )}
 
-    {/* Results Terminal Block */}
-    <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+    {/* Results Terminal Block }
+   /* <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
 
       <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
         <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
@@ -400,8 +400,8 @@ const handleICDSearch = async () => {
     </div>
 
   </div>
-)}{/* Fallback for other modules */}
-          {activeTab !== "Overview" && activeTab !== "ICD-11 Finder" && (
+)}{/* Fallback for other modules }
+         /* {activeTab !== "Overview" && activeTab !== "ICD-11 Finder" && (
             <div className="bg-white p-12 rounded-2xl border border-slate-200/60 shadow-sm text-center">
               <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mx-auto mb-3">
                 <Database size={24} />
@@ -414,4 +414,14 @@ const handleICDSearch = async () => {
       </div>
     </div>
   );
+}*/
+  import React from 'react';
+import Dashboard from './Dashboard';
+
+function App() {
+  return (
+    <Dashboard />
+  );
 }
+
+export default App;
