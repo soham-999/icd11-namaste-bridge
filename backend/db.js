@@ -13,6 +13,4 @@ client.connect()
   .then(() => console.log("DB connected successfully"))
   .catch(err => console.error("DB connection error:", err));
 
-module.exports = client; 
-console.log("DB_USER =", process.env.DB_USER);
-console.log("DB_NAME=",process.env.DB_NAME);
+module.exports = client;

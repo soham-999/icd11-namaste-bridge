@@ -1,42 +1,58 @@
 const express = require("express");
 const router = express.Router();
 
-const { findDisease } = require("../services/icd/icdService");
-const { success, error } = require("../utils/response");
+const {
+  mapPatientCondition
+} = require("../services/mapping/mappingEngine");
 
-// ✅ GET (for testing)
+const {
+  success,
+  error
+} = require("../utils/response");
+
+// GET
 router.get("/:symptom", async (req, res) => {
   try {
-    const result = await findDisease(req.params.symptom);
 
-    if (!result) {
-      return res.status(404).json(error("No matching ICD record found"));
-    }
+    const result =
+      await mapPatientCondition([
+        req.params.symptom
+      ]);
 
     res.json(success(result));
+
   } catch (err) {
-    res.status(500).json(error(err.message));
+
+    res.status(500).json(
+      error(err.message)
+    );
+
   }
 });
 
-// ✅ POST (FOR FRONTEND INTEGRATION - IMPORTANT)
+// POST
 router.post("/", async (req, res) => {
   try {
-    const symptoms = req.body.symptoms;
+
+    const { symptoms } = req.body;
 
     if (!symptoms || !symptoms.length) {
-      return res.status(400).json(error("Symptoms required"));
+      return res
+        .status(400)
+        .json(error("Symptoms required"));
     }
 
-    const result = await findDisease(symptoms[0]); // simple mapping
-
-    if (!result) {
-      return res.status(404).json(error("No matching ICD record found"));
-    }
+    const result =
+      await mapPatientCondition(symptoms);
 
     res.json(success(result));
+
   } catch (err) {
-    res.status(500).json(error(err.message));
+
+    res.status(500).json(
+      error(err.message)
+    );
+
   }
 });
 

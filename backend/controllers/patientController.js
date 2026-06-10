@@ -17,8 +17,8 @@ const addPatient = async (req, res) => {
     const icdCode = firstMapping?.icd?.icdCode || null;
     const icdSource = firstMapping?.icd?.source || "unknown";
     const traditionalMedicine =
-      firstMapping?.ayurveda?.description || null;
-
+  firstMapping?.ayurveda?.dosha || null;
+  
     const result = await client.query(
       `INSERT INTO patients
       (name, age, symptom, icd_code, traditional_medicine, icd_source)

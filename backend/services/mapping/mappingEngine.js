@@ -1,5 +1,6 @@
+const db = require("../../db");
 const { getAyurvedaMapping } = require("../traditional/ayurvedaService");
-const { findDisease } = require("../icd/icdService");
+const { mapSymptoms } = require("../mappingEngineClient");
 
 // FUSION SCORE CALCULATION
 const calculateFusionScore = (icdConf, ayurvedaConf) => {
@@ -22,14 +23,29 @@ const mapPatientCondition = async (symptoms = []) => {
   for (let symptom of symptoms) {
     const clean = symptom.toLowerCase().trim();
 
+    // Ayurveda mapping
     const ayurveda = getAyurvedaMapping(clean);
     const ayurvedaConfidence =
-      ayurveda?.dosha !== "Unknown" ? 0.75 : 0.4;
+      ayurveda?.dosha && ayurveda.dosha !== "Unknown" ? 0.75 : 0.4;
 
-    const icd = await findDisease(clean);
+    // ICD mapping (FIXED: using mapSymptoms instead of undefined findDisease)
+    let icdResult = null;
+
+    try {
+      icdResult = await mapSymptoms([clean]);
+    } catch (err) {
+      console.log("ICD lookup failed:", err.message);
+      icdResult = { data: [] };
+    }
+
+    const firstICD = icdResult?.data?.[0] || {};
+    const icdCode = firstICD?.icdCode || "UNKNOWN";
+    const icdSource = firstICD?.source || "mapping-engine";
+
     const icdConfidence =
-      icd?.icdCode && icd.icdCode !== "UNKNOWN" ? 0.85 : 0.3;
+      icdCode !== "UNKNOWN" ? 0.85 : 0.3;
 
+    // Fusion
     const fusionScore = calculateFusionScore(
       icdConfidence,
       ayurvedaConfidence
@@ -37,11 +53,14 @@ const mapPatientCondition = async (symptoms = []) => {
 
     const riskLevel = getRiskLevel(fusionScore);
 
+    // Final result object
     results.push({
       symptom: clean,
 
       icd: {
-        ...icd,
+        ...firstICD,
+        icdCode,
+        source: icdSource,
         confidence: icdConfidence
       },
 
@@ -55,6 +74,29 @@ const mapPatientCondition = async (symptoms = []) => {
         risk: riskLevel
       }
     });
+
+    // Safe async DB write (no blocking, no setImmediate)
+    (async () => {
+      try {
+        await db.query(
+          `
+          INSERT INTO mapping_results
+          (symptom, icd_code, traditional_system, mapping_source, confidence_score, risk_level)
+          VALUES ($1, $2, $3, $4, $5, $6)
+        `,
+          [
+            clean,
+            icdCode,
+            ayurveda?.dosha || "UNKNOWN",
+            icdSource,
+            icdConfidence,
+            riskLevel
+          ]
+        );
+      } catch (dbErr) {
+        console.log("Mapping save error:", dbErr.message);
+      }
+    })();
   }
 
   return {

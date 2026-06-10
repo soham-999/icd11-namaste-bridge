@@ -6,8 +6,10 @@ const {
   getPatients
 } = require("../controllers/patientController");
 
-// ROUTES
-router.post("/add-patient", addPatient);
-router.get("/patients", getPatients);
+const authMiddleware = require("../middleware/authMiddleware");
+
+// ✅ PROTECTED ROUTES
+router.post("/add-patient", authMiddleware, addPatient);
+router.get("/", authMiddleware, getPatients);
 
 module.exports = router;
