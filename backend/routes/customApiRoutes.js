@@ -13,18 +13,34 @@ const db = require("../db");
  */
 router.post("/generate", authMiddleware, async (req, res) => {
   try {
-    const { symptoms, name, age } = req.body;
+    const {
+  name,
+  endpoint,
+  method,
+  rateLimit
+} = req.body;
 
-    // validation
-    if (!symptoms || !Array.isArray(symptoms) || symptoms.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Symptoms must be a non-empty array"
-      });
-    }
+// validation
+if (!name || !endpoint) {
+  return res.status(400).json({
+    success: false,
+    message: "Name and endpoint are required"
+  });
+}
 
-    // 1. Run mapping engine
-    const mapping = await mapPatientCondition(symptoms);
+// create generated api key
+const apiKey =
+  "sk_live_" +
+  Math.random().toString(36).substring(2, 18);
+
+// dummy mapping response
+const mapping = {
+  name,
+  endpoint,
+  method,
+  rateLimit,
+  apiKey
+};
 
     // 2. Store request log (FIXED SCHEMA)
     const logResult = await db.query(

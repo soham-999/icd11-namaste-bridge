@@ -10,6 +10,6 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 // ✅ PROTECTED ROUTES
 router.post("/add-patient", authMiddleware, addPatient);
-router.get("/", authMiddleware, getPatients);
+router.get("/", getPatients);
 
 module.exports = router;

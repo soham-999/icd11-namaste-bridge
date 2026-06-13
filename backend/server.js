@@ -31,7 +31,7 @@ app.use("/icd", icdRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/custom-api", customApiRoutes);
 
-// health check
+// health checkxx
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });

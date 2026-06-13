@@ -1,8 +1,9 @@
+
 const db = require("../../db");
 const { getAyurvedaMapping } = require("../traditional/ayurvedaService");
 const { mapSymptoms } = require("../mappingEngineClient");
 
-// FUSION SCORE CALCULATION
+
 const calculateFusionScore = (icdConf, ayurvedaConf) => {
   return (icdConf * 0.6) + (ayurvedaConf * 0.4);
 };
@@ -23,43 +24,69 @@ const mapPatientCondition = async (symptoms = []) => {
   for (let symptom of symptoms) {
     const clean = symptom.toLowerCase().trim();
 
-    // Ayurveda mapping
+  
     const ayurveda = getAyurvedaMapping(clean);
-    const ayurvedaConfidence =
-      ayurveda?.dosha && ayurveda.dosha !== "Unknown" ? 0.75 : 0.4;
 
-    // ICD mapping (FIXED: using mapSymptoms instead of undefined findDisease)
+    const ayurvedaConfidence =
+      ayurveda?.dosha &&
+      ayurveda.dosha !== "Unknown"
+        ? 0.75
+        : 0.4;
+
     let icdResult = null;
 
     try {
       icdResult = await mapSymptoms([clean]);
     } catch (err) {
-      console.log("ICD lookup failed:", err.message);
-      icdResult = { data: [] };
+      console.log(
+        "ICD lookup failed:",
+        err.message
+      );
+
+      icdResult = {
+        data: []
+      };
     }
 
-    const firstICD = icdResult?.data?.[0] || {};
-    const icdCode = firstICD?.icdCode || "UNKNOWN";
-    const icdSource = firstICD?.source || "mapping-engine";
+    const firstICD =
+      icdResult?.data?.[0] || {};
+
+    const icdCode =
+      firstICD?.icd?.icd_code ||
+      firstICD?.icdCode ||
+      "UNKNOWN";
+
+    const icdSource =
+      firstICD?.icd?.source ||
+      firstICD?.source ||
+      "mapping-engine";
+
+    const icdDescription =
+      firstICD?.icd?.description ||
+      "No description";
 
     const icdConfidence =
-      icdCode !== "UNKNOWN" ? 0.85 : 0.3;
+      icdCode !== "UNKNOWN"
+        ? 0.85
+        : 0.3;
 
-    // Fusion
-    const fusionScore = calculateFusionScore(
-      icdConfidence,
-      ayurvedaConfidence
-    );
 
-    const riskLevel = getRiskLevel(fusionScore);
+    const fusionScore =
+      calculateFusionScore(
+        icdConfidence,
+        ayurvedaConfidence
+      );
 
-    // Final result object
+    const riskLevel =
+      getRiskLevel(fusionScore);
+
+
     results.push({
       symptom: clean,
 
       icd: {
-        ...firstICD,
         icdCode,
+        description: icdDescription,
         source: icdSource,
         confidence: icdConfidence
       },
@@ -70,31 +97,43 @@ const mapPatientCondition = async (symptoms = []) => {
       },
 
       fusion: {
-        score: Number(fusionScore.toFixed(2)),
+        score: Number(
+          fusionScore.toFixed(2)
+        ),
         risk: riskLevel
       }
     });
-
-    // Safe async DB write (no blocking, no setImmediate)
+    
     (async () => {
       try {
         await db.query(
           `
           INSERT INTO mapping_results
-          (symptom, icd_code, traditional_system, mapping_source, confidence_score, risk_level)
-          VALUES ($1, $2, $3, $4, $5, $6)
-        `,
+          (
+            symptom,
+            icd_code,
+            traditional_system,
+            mapping_source,
+            confidence_score,
+            risk_level
+          )
+          VALUES ($1,$2,$3,$4,$5,$6)
+          `,
           [
             clean,
             icdCode,
-            ayurveda?.dosha || "UNKNOWN",
+            ayurveda?.dosha ||
+              "UNKNOWN",
             icdSource,
             icdConfidence,
             riskLevel
           ]
         );
       } catch (dbErr) {
-        console.log("Mapping save error:", dbErr.message);
+        console.log(
+          "Mapping save error:",
+          dbErr.message
+        );
       }
     })();
   }
@@ -105,4 +144,7 @@ const mapPatientCondition = async (symptoms = []) => {
   };
 };
 
-module.exports = { mapPatientCondition };
+module.exports = {
+  mapPatientCondition
+};
+
