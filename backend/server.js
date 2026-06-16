@@ -15,6 +15,7 @@ const patientRoutes = require("./routes/patientRoutes");
 const icdRoutes = require("./routes/icdRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const customApiRoutes = require("./routes/customApiRoutes");
+const batchRoutes = require("./routes/batchRoutes");
 
 // CORE MIDDLEWARE (ORDER MATTERS)
 app.use(cors());
@@ -30,6 +31,7 @@ app.use("/patients", patientRoutes);
 app.use("/icd", icdRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/custom-api", customApiRoutes);
+app.use("/batch", batchRoutes);
 
 // health checkxx
 app.get("/health", (req, res) => {

@@ -7,7 +7,7 @@ import {
   getPatients,
   getTrafficData,
   getChapterData,
-  addPatient
+  processBatchRecords
 } from "./api";
 
 export default function Dashboard() {
@@ -24,6 +24,13 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
    const [icdResult, setIcdResult] = useState(null);
+
+   const [batchResults, setBatchResults] =
+  useState([]);
+
+const [batchLoading, setBatchLoading] =
+  useState(false);
+
   // Graph Data
   const [graphData, setGraphData] = useState({
     "15 Days": [30, 45, 68, 90, 110, 148],
@@ -60,7 +67,11 @@ export default function Dashboard() {
   // ========================================================
   const triggerGraphIncrement = (incrementValue = 1) => {
     setGraphData((prev) => {
-      const currentArray = [...prev[timeframe]];
+     const currentArray = [...(prev[timeframe] || [])];
+
+if (!currentArray.length) {
+  return prev;
+}
 
       currentArray[currentArray.length - 1] =
         currentArray[currentArray.length - 1] + incrementValue;
@@ -136,9 +147,9 @@ export default function Dashboard() {
       const data = await response.json();
 
       const freshApiNode = {
-        id:
-         data.apiId || ||
-          `API-${Math.floor(Math.random() * 900) + 100}`,
+  id:
+    data?.apiId ||
+    `API-${Math.floor(Math.random() * 900) + 100}`,
         name: newApi.name,
         endpoint: newApi.endpoint.startsWith("/")
           ? newApi.endpoint
@@ -256,7 +267,7 @@ useEffect(() => {
   // FEATURE: Batch Mapping State
   // ========================================================
   const [batchFile, setBatchFile] = useState(null);
-  const [batchResults, setBatchResults] = useState([]);
+  
 
   // ========================================================
   // Core Structured Healthcare Vocabulary Matrix
@@ -307,7 +318,7 @@ useEffect(() => {
     },
   ];
 
-  // ========================================================
+ // ========================================================
 // Core Search Handler
 // ========================================================
 const handleCoreSearchLookup = async (e) => {
@@ -315,19 +326,31 @@ const handleCoreSearchLookup = async (e) => {
 
   if (!searchQuery.trim()) {
     setSearchResults([]);
+    setIcdResult(null);
     return;
   }
 
   try {
-    // Backend ICD Search
-    const result = await getICDBySymptom(searchQuery);
+    console.log("Searching symptom:", searchQuery);
+
+    const result = await getICDBySymptom([searchQuery]);
+
+    console.log(
+  "ICD Result Full:",
+  JSON.stringify(result, null, 2)
+);
 
     setIcdResult(result);
 
+    // Handle multiple possible backend response formats
     if (Array.isArray(result)) {
       setSearchResults(result);
-    } else if (result?.results) {
+    } else if (Array.isArray(result?.results)) {
       setSearchResults(result.results);
+    } else if (Array.isArray(result?.data)) {
+      setSearchResults(result.data);
+    } else if (Array.isArray(result?.data?.data)) {
+      setSearchResults(result.data.data);
     } else {
       setSearchResults([]);
     }
@@ -336,7 +359,7 @@ const handleCoreSearchLookup = async (e) => {
   } catch (error) {
     console.error("Search Failed:", error);
 
-    // Fallback Local Search
+    // Local fallback search
     const results = diseaseMockDatabase.filter(
       (item) =>
         item.disease
@@ -348,9 +371,9 @@ const handleCoreSearchLookup = async (e) => {
     );
 
     setSearchResults(results);
+    setIcdResult(null);
   }
 };
-
 // ========================================================
 // PRE-LOADED SAMPLES: Interactive Presentation Helpers
 // ========================================================
@@ -415,7 +438,6 @@ const injectBatchSample = (type) => {
 
   triggerGraphIncrement(15);
 };
-
 // ========================================================
 // Diagnostic Demo Helper
 // ========================================================
@@ -496,14 +518,16 @@ const renderLineGraphPoints = () => {
   const dataPoints =
     graphData?.[timeframe] || [0, 0, 0, 0, 0, 0];
 
-  const max = Math.max(...dataPoints, 1) * 1.1;
+  const max = Math.max(...dataPoints, 1) * 1.1 || 1;
   const width = 500;
   const height = 140;
 
   const pointsCoordinates = dataPoints.map(
     (val, idx) => {
       const x =
-        (idx / (dataPoints.length - 1)) * width;
+  dataPoints.length > 1
+    ? (idx / (dataPoints.length - 1)) * width
+    : 0;
 
       const y =
         height - (val / max) * height;
@@ -1002,8 +1026,10 @@ return (
         searchQuery
       ]);
 
-      console.log("ICD Result:", result);
-
+      console.log(
+  "ICD Result Full:",
+  JSON.stringify(result, null, 2)
+);
       setIcdResult(result);
     } catch (err) {
       console.error("ICD Error:", err);

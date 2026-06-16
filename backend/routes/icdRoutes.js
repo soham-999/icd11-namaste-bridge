@@ -15,19 +15,29 @@ router.get("/:symptom", async (req, res) => {
   try {
 
     const result =
-      await mapPatientCondition([
-        req.params.symptom
-      ]);
+  await mapPatientCondition([
+    req.params.symptom
+  ]);
 
-    res.json(success(result));
+console.log(
+  "FINAL RESPONSE:",
+  JSON.stringify(result, null, 2)
+);
+
+res.json(success(result));
 
   } catch (err) {
 
-    res.status(500).json(
-      error(err.message)
-    );
+  console.error(
+    "ICD ROUTE ERROR:",
+    err
+  );
 
-  }
+  res.status(500).json(
+    error(err.message)
+  );
+
+}
 });
 
 // POST
@@ -42,18 +52,28 @@ router.post("/", async (req, res) => {
         .json(error("Symptoms required"));
     }
 
-    const result =
-      await mapPatientCondition(symptoms);
+   const result =
+  await mapPatientCondition(symptoms);
 
-    res.json(success(result));
+console.log(
+  "FINAL RESPONSE:",
+  JSON.stringify(result, null, 2)
+);
+
+res.json(success(result));
 
   } catch (err) {
 
-    res.status(500).json(
-      error(err.message)
-    );
+  console.error(
+    "ICD ROUTE ERROR:",
+    err
+  );
 
-  }
+  res.status(500).json(
+    error(err.message)
+  );
+
+}
 });
 
 module.exports = router;
