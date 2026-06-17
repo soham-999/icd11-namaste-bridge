@@ -1200,7 +1200,7 @@ cough`}
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
-                    
+
                     <thead>
   <tr className="bg-slate-50 text-slate-400 font-bold border-b border-slate-200 text-[10px]">
     <th className="p-4">
@@ -1267,94 +1267,164 @@ cough`}
             )}
           </div>
         )}
+{/* VIEW 4: ANALYTICS / DIAGNOSTICS */}
+{activeTab === "Analytics Reports" && (
+  <div className="space-y-6">
 
-        {/* VIEW 4: ANALYTICS / DIAGNOSTICS */}
-        {activeTab === "Analytics Reports" && (
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                Patient Diagnostic Clinical File Parser
-              </h3>
+    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+        Patient Diagnostic Clinical File Parser
+      </h3>
 
-              <p className="text-xs text-slate-400 mb-4">
-                Attach multi-modal clinic logs to execute direct disease
-                predictive indexing.
-              </p>
+      <p className="text-xs text-slate-400 mb-4">
+        Attach multi-modal clinic logs to execute direct disease predictive indexing.
+      </p>
 
-              <div className="flex flex-wrap gap-2 mb-4">
-                <button
-                  type="button"
-                  onClick={() => injectDiagnosticSample("mri")}
-                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 rounded-lg text-xs font-semibold transition-all"
-                >
-                  ⚡ Inject Patient MRI Spine Scan Sample
-                </button>
+      <div className="flex flex-wrap gap-2 mb-4">
 
-                <button
-                  type="button"
-                  onClick={() => injectDiagnosticSample("blood")}
-                  className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 rounded-lg text-xs font-semibold transition-all"
-                >
-                  ⚡ Inject Patient Complex Blood Sample
-                </button>
-              </div>
+        <button
+          type="button"
+          onClick={() => injectDiagnosticSample("mri")}
+          className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 rounded-lg text-xs font-semibold"
+        >
+          ⚡ Inject Patient MRI Spine Scan Sample
+        </button>
 
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  injectDiagnosticSample("blood");
-                }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
-              >
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase block">
-                    Clinical Presentation Symptoms
-                  </label>
+        <button
+          type="button"
+          onClick={() => injectDiagnosticSample("blood")}
+          className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 rounded-lg text-xs font-semibold"
+        >
+          ⚡ Inject Patient Complex Blood Sample
+        </button>
 
-                  <textarea
-                    value={patientInput.symptoms}
-                    onChange={(e) =>
-                      setPatientInput({
-                        ...patientInput,
-                        symptoms: e.target.value,
-                      })
-                    }
-                    placeholder="Somatic markers profile configuration data..."
-                    className="w-full h-28 bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg p-3 focus:outline-none"
-                  />
-                </div>
+      </div>
 
-                <div className="flex flex-col justify-between gap-3">
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
-                      Laboratory Assessment Attachment File Profile
-                    </label>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
 
-                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-600 truncate font-mono">
-                      {patientInput.fileName
-                        ? `Loaded: ${patientInput.fileName} [${patientInput.fileType}]`
-                        : "No physical attachment parsed yet"}
-                    </div>
-                  </div>
+          console.log(
+            "PATIENT INPUT:",
+            patientInput
+          );
 
-                  <button
-                    type="submit"
-                    className="w-full bg-[#0f172a] hover:bg-slate-800 text-white font-semibold text-xs py-2.5 rounded-lg shadow-sm"
-                  >
-                    Compute Ingestion Diagnostics Profile
-                  </button>
-                </div>
-              </form>
+          if (
+            patientInput.symptoms
+              .toLowerCase()
+              .includes("pain")
+          ) {
+            injectDiagnosticSample("mri");
+          } else {
+            injectDiagnosticSample("blood");
+          }
+        }}
+        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+      >
+
+        <div className="space-y-2">
+
+          <label className="text-[10px] font-bold text-slate-500 uppercase block">
+            Clinical Presentation Symptoms
+          </label>
+
+          <textarea
+            value={patientInput.symptoms}
+            onChange={(e) =>
+              setPatientInput({
+                ...patientInput,
+                symptoms: e.target.value
+              })
+            }
+            placeholder="Enter symptoms..."
+            className="w-full h-28 bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg p-3 focus:outline-none"
+          />
+
+        </div>
+
+        <div className="flex flex-col justify-between gap-3">
+
+          <div>
+
+            <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
+              Laboratory Assessment Attachment File Profile
+            </label>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-600 truncate font-mono">
+
+              {patientInput.fileName
+                ? `Loaded: ${patientInput.fileName} [${patientInput.fileType}]`
+                : "No physical attachment parsed yet"}
+
             </div>
 
-            {diagnosticResult && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* keep rest of your diagnosticResult cards unchanged */}
-              </div>
-            )}
           </div>
-        )}
 
+          <button
+            type="submit"
+            className="w-full bg-[#0f172a] hover:bg-slate-800 text-white font-semibold text-xs py-2.5 rounded-lg shadow-sm"
+          >
+            Compute Ingestion Diagnostics Profile
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+    {diagnosticResult && (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <h4 className="font-bold text-slate-700 mb-2">
+            Disease Stage
+          </h4>
+
+          <p className="text-sm text-slate-600">
+            {diagnosticResult?.stage}
+          </p>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <h4 className="font-bold text-slate-700 mb-2">
+            Recommended Treatment
+          </h4>
+
+          <p className="text-sm text-slate-600">
+            {diagnosticResult?.medications}
+          </p>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <h4 className="font-bold text-slate-700 mb-2">
+            Risk Profile
+          </h4>
+
+          <p className="text-sm text-red-600 font-semibold">
+            {diagnosticResult?.riskProfile}
+          </p>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <h4 className="font-bold text-slate-700 mb-2">
+            Referral Information
+          </h4>
+
+          <p className="text-sm text-slate-600">
+            {diagnosticResult?.doctor}
+          </p>
+
+          <p className="text-sm text-slate-500 mt-1">
+            {diagnosticResult?.hospital}
+          </p>
+        </div>
+
+      </div>
+    )}
+
+  </div>
+)}
         {/* VIEW 5: CREATE API */}
         {activeTab === "CREATE API" && (
           <div className="space-y-6 animate-fadeIn">
