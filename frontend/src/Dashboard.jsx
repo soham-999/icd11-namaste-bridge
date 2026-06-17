@@ -7,7 +7,7 @@ import {
   getPatients,
   getTrafficData,
   getChapterData,
-  processBatchRecords
+  processBatch
 } from "./api";
 
 export default function Dashboard() {
@@ -20,13 +20,19 @@ export default function Dashboard() {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   const [stats, setStats] = useState(null);
-  // Search States
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-   const [icdResult, setIcdResult] = useState(null);
 
-   const [batchResults, setBatchResults] =
+  // Search States
+const [searchQuery, setSearchQuery] = useState("");
+const [searchResults, setSearchResults] = useState([]);
+const [icdResult, setIcdResult] = useState(null);
+
+const  [batchResults, setBatchResults] =
   useState([]);
+
+const [batchInput, setBatchInput] =
+  useState(
+    "fever\nheadache\ncough"
+  );
 
 const [batchLoading, setBatchLoading] =
   useState(false);
@@ -1114,29 +1120,75 @@ return (
                 </button>
               </div>
 
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  injectBatchSample("injury");
-                }}
-                className="space-y-4"
-              >
-                <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center bg-slate-50">
-                  <span className="text-xs text-slate-500 font-medium block mb-1">
-                    {batchFile
-                      ? `Staged File Vector: ${batchFile}`
-                      : "📁 Drag & Drop raw clinic tables or datasets here"}
-                  </span>
-                </div>
 
-                <button
-                  type="submit"
-                  className="bg-[#0f172a] hover:bg-slate-800 text-white font-semibold text-xs px-6 py-2.5 rounded-lg shadow-sm"
-                >
-                  Execute Bulk Pipeline Conversion
-                </button>
-              </form>
             </div>
+
+       <form
+  onSubmit={async (e) => {
+    e.preventDefault();
+
+    try {
+      setBatchLoading(true);
+const records = batchInput
+  .split("\n")
+  .map((r) => r.trim())
+  .filter(Boolean);
+
+console.log(
+  "RECORDS:",
+  records
+);
+
+const result =
+  await processBatch(records);
+
+      console.log(
+        "BATCH RESULT FULL:",
+        JSON.stringify(result, null, 2)
+      );
+
+      setBatchResults(
+        result.results || []
+      );
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setBatchLoading(false);
+    }
+  }}
+>     
+  
+  <textarea
+    value={batchInput}
+    onChange={(e) =>
+      setBatchInput(e.target.value)
+    }
+    rows={6}
+    className="w-full border border-slate-300 rounded-lg p-3 text-sm"
+    placeholder={`fever
+headache
+cough`}
+  />
+
+  <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center bg-slate-50">
+    <span className="text-xs text-slate-500 font-medium block mb-1">
+      {batchFile
+        ? `Staged File Vector: ${batchFile}`
+        : "📁 Drag & Drop raw clinic tables or datasets here"}
+    </span>
+  </div>
+
+  <button
+    type="submit"
+    disabled={batchLoading}
+    className="bg-[#0f172a] hover:bg-slate-800 text-white font-semibold text-xs px-6 py-2.5 rounded-lg shadow-sm"
+  >
+    {batchLoading
+      ? "Processing..."
+      : "Execute Bulk Pipeline Conversion"}
+  </button>
+</form>
 
             {batchResults?.length > 0 && (
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -1148,65 +1200,68 @@ return (
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
+                    
                     <thead>
-                      <tr className="bg-slate-50 text-slate-400 font-bold border-b border-slate-200 text-[10px]">
-                        <th className="p-4">
-                          Raw Ingested Clinical Narrative
-                        </th>
-                        <th className="p-4">
-                          Mapped Term Identification
-                        </th>
-                        <th className="p-4">Local ID Tag</th>
-                        <th className="p-4">ICD-11 Targets</th>
-                        <th className="p-4">Pipeline Status</th>
-                      </tr>
-                    </thead>
+  <tr className="bg-slate-50 text-slate-400 font-bold border-b border-slate-200 text-[10px]">
+    <th className="p-4">
+      Symptom
+    </th>
 
-                    <tbody className="divide-y divide-slate-100 font-mono text-slate-700 text-[11px]">
-                      {batchResults.map((row, idx) => (
-                        <tr
-                          key={idx}
-                          className="hover:bg-slate-50 transition-colors"
-                        >
-                          <td className="p-4 font-sans text-slate-800">
-                            {row.rawTerm}
-                          </td>
+    <th className="p-4">
+      Traditional Diagnosis
+    </th>
 
-                          <td className="p-4 font-sans text-blue-600 font-semibold">
-                            {row.mappedTerm}
-                          </td>
+    <th className="p-4">
+      System
+    </th>
 
-                          <td className="p-4 text-slate-400">
-                            {row.localId}
-                          </td>
+    <th className="p-4">
+      ICD Code
+    </th>
 
-                          <td className="p-4">
-                            {row.icd11Code ? (
-                              <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded font-bold">
-                                {row.icd11Code}
-                              </span>
-                            ) : (
-                              <span className="text-slate-300 italic">
-                                Unmapped
-                              </span>
-                            )}
-                          </td>
+    <th className="p-4">
+      Risk
+    </th>
+  </tr>
+</thead>
 
-                          <td className="p-4">
-                            <span
-                              className={`px-2 py-1 rounded-full text-[9px] font-bold ${
-                                row.status === "SUCCESS"
-                                  ? "bg-emerald-100 text-emerald-800"
-                                  : "bg-amber-100 text-amber-800"
-                              }`}
-                            >
-                              {row.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+<tbody className="divide-y divide-slate-100">
+  {batchResults.map((row, idx) => {
+    const item = row.data?.[0];
+
+    return (
+      <tr
+        key={idx}
+        className="hover:bg-slate-50"
+      >
+        <td className="p-4">
+          {item?.symptom}
+        </td>
+
+        <td className="p-4 text-blue-600 font-semibold">
+          {item?.traditional?.description}
+        </td>
+
+        <td className="p-4">
+          {item?.traditional?.system}
+        </td>
+
+        <td className="p-4">
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded font-bold">
+            {item?.icd?.icdCode}
+          </span>
+        </td>
+
+        <td className="p-4">
+          <span className="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-[9px] font-bold">
+            {item?.fusion?.risk}
+          </span>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+ </table>
                 </div>
               </div>
             )}

@@ -69,8 +69,8 @@ export const addPatient = async (payload) => {
   return res.data;
 };
 
-// BATCH PIPELINE
-export const processBatchRecords = async (records) => {
+// BATCH PROCESSING
+export const processBatch = async (records) => {
   const res = await API.post(
     "/batch/process",
     {
