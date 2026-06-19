@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const { Client } = require("pg");
 
 const client = new Client({
@@ -10,7 +11,11 @@ const client = new Client({
 });
 
 client.connect()
-  .then(() => console.log("DB connected successfully"))
-  .catch(err => console.error("DB connection error:", err));
+  .then(() => {
+    console.log("DB connected successfully");
+  })
+  .catch((err) => {
+    console.error("DB connection error:", err);
+  });
 
 module.exports = client;
