@@ -1,6 +1,6 @@
 // src/MappingWorkspace.jsx
 import React, { useState } from 'react';
-import { mockPatients, namasteToIcdMatches, icdToNamasteMatches } from './data';
+import { mockPatients, namasteToIcdMatches, icdToNamasteMatches,globalHistoryLog } from './data';
 import { ArrowLeftRight, CheckCircle, Save, ShieldAlert, Search } from 'lucide-react';
 
 export default function MappingWorkspace({ activePatientId, onMappingSaved }) {
