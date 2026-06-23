@@ -16,6 +16,7 @@ const icdRoutes = require("./routes/icdRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const customApiRoutes = require("./routes/customApiRoutes");
 const batchRoutes = require("./routes/batchRoutes");
+const ledgerRoutes = require("./routes/ledgerRoutes");
 
 // CORE MIDDLEWARE (ORDER MATTERS)
 app.use(cors());
@@ -32,6 +33,7 @@ app.use("/icd", icdRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/custom-api", customApiRoutes);
 app.use("/batch", batchRoutes);
+app.use("/ledger", ledgerRoutes);
 
 // health checkxx
 app.get("/health", (req, res) => {

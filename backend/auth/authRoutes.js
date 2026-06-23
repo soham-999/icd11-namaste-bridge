@@ -1,4 +1,5 @@
 const express = require("express");
+const roleMiddleware = require("../middleware/roleMiddleware");
 const jwt = require("jsonwebtoken");
 const authMiddleware = require("../middleware/authMiddleware");
 const bcrypt = require("bcryptjs");
@@ -98,11 +99,12 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const token = jwt.sign(
-      {
-        id: user.id,
-        username: user.username
-      },
+   const token = jwt.sign(
+  {
+    id: user.id,
+    username: user.username,
+    role: user.role
+  },
       process.env.JWT_SECRET,
       {
         expiresIn: "1h"
