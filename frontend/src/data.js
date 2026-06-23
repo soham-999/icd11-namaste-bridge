@@ -1,96 +1,79 @@
 // src/data.js
 
-export const interoperabilityMetrics = [
+export const mockPatients = [
   {
-    title: "Total Synced Concepts",
-    value: "14,820",
-    change: "+12.3%",
-    isUp: true
+    id: "PAT-2026-001",
+    name: "Arjun Mehta",
+    age: 42,
+    gender: "Male",
+    status: "Pending Validation",
+    lastVisit: "2026-06-15",
+    clinicalNotes: "Patient presenting with chronic recurring headaches exacerbated by mental stress and lack of sleep. Associated with localized temporal burning sensation."
   },
   {
-    title: "API Engine Latency",
-    value: "34ms",
-    change: "-4.1%",
-    isUp: true
-  },
-  {
-    title: "Active EHR Nodes",
-    value: "18 Active",
-    change: "Stable",
-    isUp: true
-  },
-  {
-    title: "Mapping Mismatches",
-    value: "2",
-    change: "-48.2%",
-    isUp: true
+    id: "PAT-2026-002",
+    name: "Sunita Rao",
+    age: 55,
+    gender: "Female",
+    status: "Fully Synced",
+    lastVisit: "2026-06-19",
+    clinicalNotes: "Chronic knee pain presenting with joint stiffness, popping sounds during movement, and cold weather intolerance."
   }
 ];
 
-export const mappingActivityData = [
-  { day: "Mon May 25", val: 420, pct: "45%" },
-  { day: "Tue May 26", val: 510, pct: "55%" },
-  { day: "Wed May 27", val: 490, pct: "52%" },
-  { day: "Thu May 28", val: 680, pct: "75%" },
-  { day: "Fri May 29", val: 720, pct: "80%" },
-  { day: "Sat May 30", val: 310, pct: "35%" },
-  { day: "Sun May 31", val: 890, pct: "95%" }
-];
+export const namasteToIcdMatches = {
+  "Vataja Shirashoola": [
+    {
+      icdCode: "TM12.1",
+      title: "Vataja Shirashoola Disorders",
+      confidence: 0.96,
+      matchType: "Semantic Exact",
+      chapter: "Chapter 26: Traditional Medicine Conditions - Module I",
+      description: "A condition characterized by pricking or throbbing headache primarily caused by an imbalance in Vata Dosha."
+    },
+    {
+      icdCode: "TM12.9",
+      title: "Traditional Medicine Headache Disorder, Unspecified",
+      confidence: 0.74,
+      matchType: "Broad Mapping",
+      chapter: "Chapter 26: Module I",
+      description: "General classification for cephalalgia presenting within traditional medicine diagnostic criteria."
+    }
+  ],
+  "Sandhigata Vata": [
+    {
+      icdCode: "TM15.4",
+      title: "Sandhigata Vata (Osteoarthropathy)",
+      confidence: 0.94,
+      matchType: "Semantic Exact",
+      chapter: "Chapter 26: Traditional Medicine Conditions",
+      description: "Degenerative joint disease corresponding to Vata localization within the skeletal articulations."
+    }
+  ]
+};
 
-export const terminologyDistribution = [
-  { name: "Ayurveda (AYU)", pct: 45, color: "bg-emerald-500", strokeDash: "45 100", strokeOffset: "0" },
-  { name: "Unani (UNA)", pct: 25, color: "bg-blue-600", strokeDash: "25 100", strokeOffset: "-45" },
-  { name: "Siddha (SID)", pct: 15, color: "bg-indigo-600", strokeDash: "15 100", strokeOffset: "-70" },
-  { name: "Homeopathy (HOM)", pct: 10, color: "bg-amber-500", strokeDash: "10 100", strokeOffset: "-85" },
-  { name: "Sowa-Rigpa (SOW)", pct: 5, color: "bg-sky-500", strokeDash: "5 100", strokeOffset: "-95" }
-];
+export const icdToNamasteMatches = {
+  "TM12.1": [
+    { term: "Vataja Shirashoola", formulationMatch: "Dashamoola Katutrayam", confidence: 0.96 },
+    { term: "Ardhavavabhedaka", formulationMatch: "Pathyakshadhatryadi", confidence: 0.68 }
+  ]
+};
 
-export const recentMappings = [
-  { source: "Amavata", target: "1B10.2", status: "Success" },
-  { source: "Tamaka Shwasa", target: "CA23.0", status: "Success" },
-  { source: "Zeequn Nafas", target: "CA23.0", status: "Success" },
-  { source: "Sandhivata", target: "FA01.Z", status: "Success" },
-  { source: "Kasa", target: "MD11", status: "Pending" }
-];
-
-export const systemAuditLogs = [
+export const globalHistoryLog = [
   {
-    id: 1,
-    type: "info",
-    title: "FHIR Bundle Validated",
-    time: "2 mins ago",
-    msg: "ConceptMap resource bound successfully to local EHR node."
+    id: "LOG-9912",
+    timestamp: "2026-06-21 14:22:10",
+    operator: "Dr. A. Upadhyay",
+    action: "Validated Mapping",
+    details: "Vataja Shirashoola ➔ TM12.1 (PAT-2026-001)",
+    status: "SUCCESS"
   },
   {
-    id: 2,
-    type: "low",
-    title: "Unmapped Term Flagged",
-    time: "12 mins ago",
-    msg: "Local term 'Madhumeha' requested mapping optimization query."
-  },
-  {
-    id: 3,
-    type: "high",
-    title: "Connection Alert",
-    time: "1 hr ago",
-    msg: "External clinic network node dropped handshake packets intermittently."
+    id: "LOG-9911",
+    timestamp: "2026-06-21 11:05:43",
+    operator: "System Pipeline",
+    action: "Bulk Ingestion Ingested",
+    details: "Processed 12 clinic legacy rows via CSV ingestion",
+    status: "SUCCESS"
   }
 ];
-export const kpiData = interoperabilityMetrics;
-
-export const trafficData = mappingActivityData.map(item => ({
-  name: item.day,
-  value: item.val
-}));
-
-export const chapterData = terminologyDistribution.map(item => ({
-  name: item.name,
-  value: item.pct
-}));
-
-export const topDiagnoses = recentMappings.map(item => ({
-  code: item.target,
-  diagnosis: item.source,
-  cases: "N/A",
-  percentage: item.status
-}));
