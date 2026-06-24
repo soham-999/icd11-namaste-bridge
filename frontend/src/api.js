@@ -80,5 +80,12 @@ export const processBatch = async (records) => {
 
   return res.data;
 };
-
+// BATCH PROCESSING ke theek niche ise jod do:
+export const commitLedger = async (payload) => {
+  const res = await API.post(
+    "/ledger/commit",
+    payload
+  );
+  return res.data;
+};
 export default API;

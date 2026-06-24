@@ -6,6 +6,8 @@ import {
   icdToNamasteMatches, 
   globalHistoryLog 
 } from './data';
+import { getPatients, commitLedger } from './api';
+
 import { 
   LayoutDashboard, 
   Users, 
@@ -29,7 +31,8 @@ import {
 
 export default function Dashboard() {
   // Navigation & Responsiveness State
-  const [activeTab, setActiveTab] = useState('DASHBOARD'); 
+  const [patients, setPatients] = useState([]); 
+  const [activeTab, setActiveTab] = useState('DASHBOARD');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile Drawer Controller
   const [selectedPatientId, setSelectedPatientId] = useState('PAT-2026-001');
   
@@ -39,6 +42,7 @@ export default function Dashboard() {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [isValidationStamped, setIsValidationStamped] = useState(false);
   const [localLogs, setLocalLogs] = useState(globalHistoryLog);
+  const [liveSuggestions, setLiveSuggestions] = useState([]); 
   
   // Real-Time Simulation State
   const [liveVitals, setLiveVitals] = useState({ activeEmergencies: 2, mappedToday: 42, systemLoad: "14%" });
@@ -47,7 +51,10 @@ export default function Dashboard() {
   const [customApiPath, setCustomApiPath] = useState('/api/v1/crosswalk-stream');
   const [generatedToken, setGeneratedToken] = useState('');
 
-  const activePatient = mockPatients.find(p => p.id === selectedPatientId) || mockPatients[0];
+  const activePatient = (patients && patients.length >0)
+  ? (patients.find(p => p.id === selectedPatientId) || patients[0])
+  : {id: 'TEMP', name: 'Loading...', clinicalNotes: 'Fetching from database...'};
+
 
   // Simulating real-time telemetry fluctuations
   useEffect(() => {
@@ -61,11 +68,52 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const activeSuggestions = mappingMode === 'NAMASTE_TO_ICD' 
-    ? (namasteToIcdMatches[mappingQuery] || [])
-    : (icdToNamasteMatches[mappingQuery] || []);
+  // Adrija's Step 5: Load real patients from backend gateway
+  useEffect(() => {
+    loadPatients();
+  }, []);
 
-  const handleCommitMapping = () => {
+  const loadPatients = async () => {
+    try {
+      const data = await getPatients();
+      setPatients(data.data || data);
+    } catch (err) {
+      console.error("Failed to load backend patients:", err);
+    }
+  };
+ // ➔ NEW: API Call Hook (Telemetry ke theek baad)
+  useEffect(() => {
+    const fetchLiveCodes = async () => {
+      if (mappingQuery.trim().length > 2) {
+        try {
+  const data = await getICDBySymptom(mappingQuery);
+  console.log("Backend se aaya raw data:", data); // Isse terminal/console me data dikhega
+  
+  // CRASH-PROOF LOGIC: Check karo ki data array hai ya nahi
+  if (Array.isArray(data)) {
+    setLiveSuggestions(data);
+  } else if (data && Array.isArray(data.matches)) {
+    setLiveSuggestions(data.matches);
+  } else if (data && Array.isArray(data.data)) {
+    setLiveSuggestions(data.data);
+  } else {
+    setLiveSuggestions([]); // Agar kuch samajh na aaye toh khali rakho, crash mat karo
+  }
+}
+ catch (err) {
+  console.error("Database query failed:", err);
+  setLiveSuggestions([]);
+}
+ } else {
+        setLiveSuggestions([]);
+      }
+    };
+    fetchLiveCodes();
+  }, [mappingQuery]);
+
+  const activeSuggestions = liveSuggestions;
+
+  const handleCommitMapping = async() => {
     if (!isValidationStamped) return alert("Attestation warning: Apply a clinical stamp before ledger commitment.");
     
     const logEntry = {
@@ -76,16 +124,27 @@ export default function Dashboard() {
       details: `${mappingQuery} ➔ ${selectedMatch.icdCode || selectedMatch.term} (${activePatient.id})`,
       status: "SUCCESS"
     };
-
+    try
+    {
+      await commitLedger({
+        patient_id:activePatient.id,
+        action:"Validated Mapping",
+        details:logEntry.details,
+        status:"SUCCESS"
+      });
     setLocalLogs([logEntry, ...localLogs]);
-    alert("System Lock: Committed to local records store.");
+    alert("System Lock: Committed to real database ledger.");
     setActiveTab('HISTORY');
-  };
-
-  // Nav items configuration array
+  } catch (err) {
+    console.error("Ledger commit failed:", err.message);
+    alert("Ledger error:Could not secure logs on backend server.");
+  }
+};
+// Nav items configuration array
   const navigationItems = [
     { id: 'DASHBOARD', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'MAPPING_CONSOLE', label: 'NAMASTE ↔ ICD-11 Mapper', icon: ArrowLeftRight },
+    { id: 'MAPPING_WORKSPACE', label: 'Mapping Workspace', icon: Terminal},
     { id: 'PATIENT_TRIAGE', label: 'Patient Clinical Workspace', icon: Users },
     { id: 'HISTORY', label: 'Patient Ledger History', icon: History },
     { id: 'EXPORT', label: 'Data Export Engine', icon: FileDown },
@@ -115,7 +174,7 @@ export default function Dashboard() {
                 <HeartPulse className="h-5 w-5" />
               </div>
               <div>
-                <h1 className="text-sm font-black tracking-wide text-white uppercase">IEM Med-Center</h1>
+                <h1 className="text-sm font-black tracking-wide text-white uppercase">Med-Center</h1>
                 <p className="text-[10px] text-teal-400 font-mono tracking-wider font-bold">WORKSTATION OS</p>
               </div>
             </div>
@@ -184,7 +243,7 @@ export default function Dashboard() {
               <div className="bg-slate-850 p-4 rounded-xl border border-slate-800 relative overflow-hidden">
                 <div className="absolute right-3 top-3 text-red-500/20"><AlertCircle className="h-12 w-12" /></div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Active Triage Cases</span>
-                <p className="text-3xl font-black text-white mt-1">{mockPatients.length}</p>
+                <p className="text-3xl font-black text-white mt-1">{patients.length}</p>
                 <span className="text-[10px] text-red-400 font-medium mt-1 inline-flex items-center gap-1">
                   ● {liveVitals.activeEmergencies} Unmapped Critical
                 </span>
@@ -220,7 +279,7 @@ export default function Dashboard() {
                   <span className="text-[10px] bg-indigo-950 border border-indigo-800 text-indigo-400 px-2 py-0.5 rounded font-mono font-bold w-fit">Auto-Polling Active</span>
                 </div>
                 <div className="p-2 divide-y divide-slate-800/60">
-                  {mockPatients.map(p => (
+                  {patients.map(p => (
                     <div key={p.id} className="p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between hover:bg-slate-800/40 rounded-lg transition-colors gap-3">
                       <div className="space-y-1 min-w-0 w-full">
                         <div className="flex items-center gap-2">
@@ -379,7 +438,7 @@ export default function Dashboard() {
           <div className="flex-1 p-4 lg:p-6 overflow-y-auto space-y-4">
             <h2 className="text-xl font-black text-white">Patient Clinical Workspace</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {mockPatients.map(patient => (
+              {patients.map(patient => (
                 <div key={patient.id} className={`p-4 bg-slate-850 rounded-xl border ${selectedPatientId === patient.id ? 'border-teal-500' : 'border-slate-800'}`}>
                   <h4 className="text-sm font-bold text-white">{patient.name} (ID: {patient.id})</h4>
                   <p className="text-xs text-slate-400 italic bg-slate-900 p-2 rounded mt-2">"{patient.clinicalNotes}"</p>

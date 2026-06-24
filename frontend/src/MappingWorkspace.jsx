@@ -1,28 +1,46 @@
 // src/MappingWorkspace.jsx
-import React, { useState } from 'react';
-import { mockPatients, namasteToIcdMatches, icdToNamasteMatches,globalHistoryLog } from './data';
+import React, { useState, useEffect } from 'react';
+import { getPatients, getICDBySymptom } from './api';
 import { ArrowLeftRight, CheckCircle, Save, ShieldAlert, Search } from 'lucide-react';
 
 export default function MappingWorkspace({ activePatientId, onMappingSaved }) {
-  const [mappingMode, setMappingMode] = useState('NAMASTE_TO_ICD'); // or ICD_TO_NAMASTE
+  const [mappingMode, setMappingMode] = useState('NAMASTE_TO_ICD'); 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [isValidated, setIsValidated] = useState(false);
+  const [patients, setPatients] = useState([]);
+  const [liveSuggestions, setLiveSuggestions] = useState([]);
 
-  // Fallback to first patient if none specified
-  const patient = mockPatients.find(p => p.id === activePatientId) || mockPatients[0];
+  // Fetch patients on mount
+  useEffect(() => {
+    const loadPatients = async () => {
+      try {
+        const data = await getPatients();
+        setPatients(data);
+      } catch (error) {
+        console.error("Backend cannot fetch patients:", error);
+      }
+    };
+    loadPatients();
+  }, []);
 
-  // Get dynamic suggestions based on mode and query
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-    setSelectedMatch(null);
-    setIsValidated(false);
+  const patient = patients.find(p => p.id === activePatientId) || patients[0] || {};
+
+  // Reusable search function for both input typing and quick buttons
+  const triggerSearch = async (query) => {
+    if (query.trim().length > 2) {
+      try {
+        const data = await getICDBySymptom(query);
+        setLiveSuggestions(data.matches || data || []);
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+      }
+    } else {
+      setLiveSuggestions([]);
+    }
   };
 
-  const suggestions = mappingMode === 'NAMASTE_TO_ICD' 
-    ? (namasteToIcdMatches[searchQuery] || [])
-    : (icdToNamasteMatches[searchQuery] || []);
-
+  // Handle Save Action
   const handleSave = () => {
     if (!isValidated) return alert("Please validate the clinical mapping before saving.");
     
@@ -39,6 +57,8 @@ export default function MappingWorkspace({ activePatientId, onMappingSaved }) {
     if (onMappingSaved) onMappingSaved(savedRecord);
   };
 
+  const suggestions = liveSuggestions;
+
   return (
     <div className="flex flex-col h-screen bg-slate-50 text-slate-900">
       {/* STICKY CLINICAL PATIENT HEADER */}
@@ -46,13 +66,13 @@ export default function MappingWorkspace({ activePatientId, onMappingSaved }) {
         <div>
           <span className="text-xs font-semibold text-teal-600 tracking-wider uppercase">Active Session Patient</span>
           <div className="flex items-center gap-4 mt-0.5">
-            <h2 className="text-lg font-bold text-slate-900">{patient.name}</h2>
-            <span className="text-sm text-slate-500">ID: <code className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-xs">{patient.id}</code></span>
-            <span className="text-sm text-slate-500">Age/Gender: {patient.age}Y / {patient.gender}</span>
+            <h2 className="text-lg font-bold text-slate-900">{patient.name || "Loading..."}</h2>
+            <span className="text-sm text-slate-500">ID: <code className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-xs">{patient.id || "N/A"}</code></span>
+            <span className="text-sm text-slate-500">Age/Gender: {patient.age || "--"}Y / {patient.gender || "--"}</span>
           </div>
         </div>
         <div className="bg-teal-50 border border-teal-100 rounded px-3 py-1.5 max-w-md hidden md:block">
-          <p className="text-xs text-teal-800 line-clamp-1 italic"><strong>Context:</strong> {patient.clinicalNotes}</p>
+          <p className="text-xs text-teal-800 line-clamp-1 italic"><strong>Context:</strong> {patient.clinicalNotes || "No notes available"}</p>
         </div>
       </div>
 
@@ -60,13 +80,13 @@ export default function MappingWorkspace({ activePatientId, onMappingSaved }) {
       <div className="p-4 bg-slate-100 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
         <div className="flex bg-white p-1 rounded-lg border border-slate-200 shadow-inner">
           <button 
-            onClick={() => { setMappingMode('NAMASTE_TO_ICD'); setSearchQuery(''); setSelectedMatch(null); setIsValidated(false); }}
+            onClick={() => { setMappingMode('NAMASTE_TO_ICD'); setSearchQuery(''); setSelectedMatch(null); setIsValidated(false); setLiveSuggestions([]); }}
             className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-2 ${mappingMode === 'NAMASTE_TO_ICD' ? 'bg-indigo-950 text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
           >
             NAMASTE ➔ ICD-11 TM
           </button>
           <button 
-            onClick={() => { setMappingMode('ICD_TO_NAMASTE'); setSearchQuery(''); setSelectedMatch(null); setIsValidated(false); }}
+            onClick={() => { setMappingMode('ICD_TO_NAMASTE'); setSearchQuery(''); setSelectedMatch(null); setIsValidated(false); setLiveSuggestions([]); }}
             className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-2 ${mappingMode === 'ICD_TO_NAMASTE' ? 'bg-indigo-950 text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
           >
             ICD-11 TM ➔ NAMASTE
@@ -95,7 +115,13 @@ export default function MappingWorkspace({ activePatientId, onMappingSaved }) {
             <input
               type="text"
               value={searchQuery}
-              onChange={handleSearchChange}
+              onChange={(e) => {
+                const query = e.target.value;
+                setSearchQuery(query);
+                setSelectedMatch(null);
+                setIsValidated(false);
+                triggerSearch(query);
+              }}
               placeholder={mappingMode === 'NAMASTE_TO_ICD' ? "e.g., Vataja Shirashoola" : "e.g., TM12.1"}
               className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all font-medium"
             />
@@ -105,11 +131,33 @@ export default function MappingWorkspace({ activePatientId, onMappingSaved }) {
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Quick Demo Indexes:</span>
             {mappingMode === 'NAMASTE_TO_ICD' ? (
               ['Vataja Shirashoola', 'Sandhigata Vata'].map(t => (
-                <button key={t} onClick={() => { setSearchQuery(t); setSelectedMatch(null); setIsValidated(false); }} className="text-xs text-left block w-full px-2 py-1 text-teal-700 bg-teal-50 hover:bg-teal-100 rounded transition font-mono">{t}</button>
+                <button 
+                  key={t} 
+                  onClick={() => { 
+                    setSearchQuery(t); 
+                    setSelectedMatch(null); 
+                    setIsValidated(false); 
+                    triggerSearch(t);
+                  }} 
+                  className="text-xs text-left block w-full px-2 py-1 text-teal-700 bg-teal-50 hover:bg-teal-100 rounded transition font-mono"
+                >
+                  {t}
+                </button>
               ))
             ) : (
               ['TM12.1'].map(t => (
-                <button key={t} onClick={() => { setSearchQuery(t); setSelectedMatch(null); setIsValidated(false); }} className="text-xs text-left block w-full px-2 py-1 text-teal-700 bg-teal-50 hover:bg-teal-100 rounded transition font-mono">{t}</button>
+                <button 
+                  key={t} 
+                  onClick={() => { 
+                    setSearchQuery(t); 
+                    setSelectedMatch(null); 
+                    setIsValidated(false); 
+                    triggerSearch(t);
+                  }} 
+                  className="text-xs text-left block w-full px-2 py-1 text-teal-700 bg-teal-50 hover:bg-teal-100 rounded transition font-mono"
+                >
+                  {t}
+                </button>
               ))
             )}
           </div>
@@ -123,7 +171,7 @@ export default function MappingWorkspace({ activePatientId, onMappingSaved }) {
           {suggestions.length === 0 ? (
             <div className="border border-dashed border-slate-300 rounded-xl p-8 text-center text-slate-400 my-auto">
               <ArrowLeftRight className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-xs">No active semantic maps found.<br/>Select a demo index string to see live results.</p>
+              <p className="text-xs">No active semantic maps found.<br/>Select a demo index string or type to see live results.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -137,13 +185,13 @@ export default function MappingWorkspace({ activePatientId, onMappingSaved }) {
                   >
                     <div className="flex justify-between items-start gap-2">
                       <span className="text-xs font-mono font-bold px-2 py-0.5 bg-slate-900 text-white rounded">
-                        {item.icdCode || item.term}
+                        {item.icdCode || item.term || 'Code'}
                       </span>
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${item.confidence >= 0.9 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
-                        {(item.confidence * 100).toFixed(0)}% Match
+                        {((item.confidence || 0.85) * 100).toFixed(0)}% Match
                       </span>
                     </div>
-                    <h4 className="text-sm font-bold text-slate-900 mt-2">{item.title || `Target: ${item.term}`}</h4>
+                    <h4 className="text-sm font-bold text-slate-900 mt-2">{item.title || item.term || `Target`}</h4>
                     {item.chapter && <p className="text-[11px] text-slate-400 mt-0.5">{item.chapter}</p>}
                     {item.formulationMatch && <p className="text-xs text-slate-600 mt-1 font-medium text-teal-700">Formulation Ref: {item.formulationMatch}</p>}
                   </div>
@@ -168,7 +216,7 @@ export default function MappingWorkspace({ activePatientId, onMappingSaved }) {
                 <div className="text-center text-slate-300 font-bold">⬇</div>
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-block">Target Interoperability Mapping</span>
-                  <p className="text-sm font-bold text-teal-600">{selectedMatch.title || selectedMatch.term} ({selectedMatch.icdCode || selectedMatch.icdCode || 'Mapped'})</p>
+                  <p className="text-sm font-bold text-teal-600">{selectedMatch.title || selectedMatch.term} ({selectedMatch.icdCode || 'Mapped'})</p>
                   <p className="text-xs text-slate-500 mt-1">{selectedMatch.description || "Syntactic map validated to crosswalk specifications."}</p>
                 </div>
 
@@ -186,7 +234,7 @@ export default function MappingWorkspace({ activePatientId, onMappingSaved }) {
             )}
           </div>
 
-          {/* SYSTEM BUTTON ACTIONS ACCORDING TO SPECS */}
+          {/* SYSTEM BUTTON ACTIONS */}
           <div className="grid grid-cols-2 gap-2 pt-4 border-t border-slate-200 mt-6">
             <button
               disabled={!selectedMatch}
