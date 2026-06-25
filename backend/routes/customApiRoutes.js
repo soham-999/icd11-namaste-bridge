@@ -107,4 +107,43 @@ router.get(
   }
 );
 
+router.delete(
+  "/:id",
+  authMiddleware,
+  async (req, res) => {
+    try {
+
+      const result = await db.query(
+        `
+        DELETE FROM custom_apis
+        WHERE id = $1
+        RETURNING *
+        `,
+        [req.params.id]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "API not found"
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "API deleted",
+        data: result.rows[0]
+      });
+
+    } catch (err) {
+
+      res.status(500).json({
+        success: false,
+        error: err.message
+      });
+
+    }
+  }
+);
+
 module.exports = router;

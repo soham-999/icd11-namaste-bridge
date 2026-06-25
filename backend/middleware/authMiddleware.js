@@ -2,37 +2,36 @@ const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
   try {
-    console.log(
-      "AUTH HEADER:",
-      req.headers.authorization
-    );
+    const authHeader = req.headers.authorization;
 
-    const authHeader =
-      req.headers.authorization;
-
+    // Check header exists
     if (!authHeader) {
       return res.status(401).json({
         success: false,
-        message: "Token required"
+        message: "Authorization token required"
       });
     }
 
-    const token =
-      authHeader.replace(
-        "Bearer ",
-        ""
-      );
+    // Expected format: Bearer <token>
+    if (!authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid authorization format"
+      });
+    }
 
-    console.log("TOKEN:", token);
+    const token = authHeader.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Token missing"
+      });
+    }
 
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET
-    );
-
-    console.log(
-      "DECODED:",
-      decoded
     );
 
     req.user = decoded;
@@ -40,15 +39,14 @@ const authMiddleware = (req, res, next) => {
     next();
 
   } catch (err) {
-
-    console.log(
-      "JWT ERROR:",
+    console.error(
+      "JWT AUTH ERROR:",
       err.message
     );
 
     return res.status(401).json({
       success: false,
-      message: "Invalid token"
+      message: "Invalid or expired token"
     });
   }
 };
