@@ -121,4 +121,55 @@ router.get(
   }
 );
 
+// =====================================
+// PATIENT MAPPING TIMELINE
+// =====================================
+
+router.get(
+  "/:id/mappings",
+  authMiddleware,
+  async (req, res) => {
+
+    try {
+
+      const patientId = req.params.id;
+
+      const result = await db.query(
+        `
+        SELECT
+          id,
+          patient_id,
+          symptom,
+          icd_code,
+          traditional_system,
+          mapping_source,
+          confidence_score,
+          risk_level,
+          created_at
+        FROM mapping_results
+        WHERE patient_id = $1
+        ORDER BY created_at DESC
+        `,
+        [patientId]
+      );
+
+      res.json({
+        success: true,
+        patientId,
+        total: result.rows.length,
+        mappings: result.rows
+      });
+
+    } catch (err) {
+
+      res.status(500).json({
+        success: false,
+        error: err.message
+      });
+
+    }
+
+  }
+);
+
 module.exports = router;

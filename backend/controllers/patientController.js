@@ -100,7 +100,6 @@ null;
 // SAVE PATIENT
 // =====================================
 
-
 const patientResult =
 await dbClient.query(
 
@@ -139,13 +138,15 @@ icdSource
 
 );
 
-
-
 const patient =
 patientResult.rows[0];
 
 
+// ===============================
+// DEBUG
+// ===============================
 
+console.log("Patient created:", patient.id);
 
 
 
@@ -153,11 +154,9 @@ patientResult.rows[0];
 // SAVE DIAGNOSIS RECORDS
 // =====================================
 
+for (const item of results) {
 
-for(const item of results){
-
-
-await dbClient.query(
+    await dbClient.query(
 
 `
 INSERT INTO diagnoses
@@ -175,36 +174,26 @@ VALUES
 
 [
 
-
 patient.id,
-
 
 item?.symptom ||
 "unknown",
-
 
 item?.traditional?.description ||
 item?.traditional?.system ||
 "Unknown",
 
-
 item?.icd?.icdCode ||
 null,
-
 
 item?.icd?.source ||
 "mapping-engine"
 
-
 ]
-
 
 );
 
-
 }
-
-
 
 
 
@@ -213,15 +202,20 @@ item?.icd?.source ||
 // SAVE MAPPING HISTORY
 // =====================================
 
+for (const item of results) {
 
-for(const item of results){
+    console.log(
+        "Saving mapping for patient:",
+        patient.id,
+        item?.symptom
+    );
 
-
-await dbClient.query(
+    await dbClient.query(
 
 `
 INSERT INTO mapping_results
 (
+patient_id,
 symptom,
 icd_code,
 traditional_system,
@@ -231,55 +225,36 @@ risk_level
 )
 
 VALUES
-($1,$2,$3,$4,$5,$6)
-
+($1,$2,$3,$4,$5,$6,$7)
 `,
 
 [
 
+patient.id,
 
 item?.symptom ||
 "unknown",
 
-
-
 item?.icd?.icdCode ||
 null,
-
-
 
 item?.traditional?.system ||
 item?.traditional?.description ||
 null,
 
-
-
 item?.icd?.source ||
 "mapping-engine",
 
-
-
-Number(
-item?.icd?.confidence || 0
-),
-
-
+Number(item?.icd?.confidence || 0),
 
 item?.fusion?.risk ||
 "LOW"
 
-
 ]
-
 
 );
 
-
 }
-
-
-
-
 
 await dbClient.query("COMMIT");
 
@@ -459,22 +434,25 @@ ORDER BY id DESC
 
 
 
-
 const mappings =
 await client.query(
-
 `
-SELECT *
+SELECT
+    id,
+    patient_id,
+    symptom,
+    icd_code,
+    traditional_system,
+    mapping_source,
+    confidence_score,
+    risk_level,
+    created_at
 FROM mapping_results
-ORDER BY id DESC
-LIMIT 50
-`
-
+WHERE patient_id = $1
+ORDER BY created_at DESC
+`,
+[id]
 );
-
-
-
-
 
 res.json({
 
