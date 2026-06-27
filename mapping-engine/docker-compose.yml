@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mapping-engine:
+    build: .
+    container_name: icd11-mapping-engine
+    ports:
+      - "8000:8000"
+    environment:
+      # WHO API credentials
+      - ME_WHO_ENABLED=true
+      - ME_WHO_CLIENT_ID=${ME_WHO_CLIENT_ID:-}
+      - ME_WHO_CLIENT_SECRET=${ME_WHO_CLIENT_SECRET:-}
+      
+      # Admin configuration
+      - ME_ADMIN_ENABLED=true
+      - ME_ADMIN_TOKEN=${ME_ADMIN_TOKEN:-supersecrettoken123}
+      
+      # Local Database configuration
+      - ME_LOCAL_ENABLED=true
+      
+      # Celery/Valkey Queue Connection
+      - CELERY_BROKER_URL=redis://valkey:6379/0
+      - CELERY_RESULT_BACKEND=redis://valkey:6379/0
+      
+      # CORS
+      - ME_CORS_ALLOW_ORIGINS=["*"]
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    depends_on:
+      - valkey
+
+  valkey:
+    image: valkey/valkey:latest
+    container_name: icd11-valkey
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  celery-worker:
+    build: .
+    container_name: icd11-celery-worker
+    command: celery -A app.worker.celery_app worker --loglevel=info
+    environment:
+      # WHO API credentials
+      - ME_WHO_ENABLED=true
+      - ME_WHO_CLIENT_ID=${ME_WHO_CLIENT_ID:-}
+      - ME_WHO_CLIENT_SECRET=${ME_WHO_CLIENT_SECRET:-}
+      
+      # Celery/Valkey Broker
+      - CELERY_BROKER_URL=redis://valkey:6379/0
+      - CELERY_RESULT_BACKEND=redis://valkey:6379/0
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - valkey
+    restart: unless-stopped
