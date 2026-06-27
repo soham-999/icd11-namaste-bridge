@@ -4,8 +4,13 @@ const API = axios.create({
   baseURL: "http://localhost:5000"
 });
 
+// Attach JWT automatically
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
+  console.log(
+    "JWT SENT:",
+    token
+  );
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -14,54 +19,150 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// ICD SEARCH
-export const getICDBySymptom = async (symptoms) => {
-  const res = await API.post("/icd", {
-    symptoms
-  });
+/* =========================
+   AUTH
+========================= */
 
-  return res.data;
-};
-
-// DASHBOARD
-export const getDashboardStats = async () => {
-  const res = await API.get("/dashboard/stats");
-  return res.data;
-};
-
-export const getTopDiagnoses = async () => {
-  const res = await API.get("/dashboard/top-diagnoses");
-  return res.data;
-};
-
-export const getTrafficData = async () => {
-  const res = await API.get("/dashboard/traffic");
-  return res.data;
-};
-
-export const getChapterData = async () => {
-  const res = await API.get("/dashboard/chapters");
-  return res.data;
-};
-
-// PATIENTS
-export const getPatients = async () => {
-  const res = await API.get("/patients");
-  return res.data;
-};
-
-export const addPatient = async (payload) => {
+export const login = async (payload) => {
   const res = await API.post(
-    "/patients/add-patient",
+    "/auth/login",
+    payload
+  );
+  const token =
+      res.data.token ||
+      res.data.accessToken ||
+      res.data.jwt;
+
+  localStorage.setItem(
+    "token",
+    token
+  );
+  console.log(
+    "JWT Saved:",
+    token
+  );
+
+  return res.data;
+};
+
+
+/* =========================
+   DASHBOARD
+========================= */
+
+export const getDashboardStats =
+async () => {
+  const res =
+  await API.get(
+    "/dashboard/stats"
+  );
+
+  return res.data;
+};
+
+export const getTopDiagnoses =
+async () => {
+  const res =
+  await API.get(
+    "/dashboard/top-diagnoses"
+  );
+
+  return res.data;
+};
+
+export const getTrafficData =
+async () => {
+  const res =
+  await API.get(
+    "/dashboard/traffic"
+  );
+
+  return res.data;
+};
+
+export const getChapterData =
+async () => {
+  const res =
+  await API.get(
+    "/dashboard/chapters"
+  );
+
+  return res.data;
+};
+
+
+/* =========================
+   PATIENTS
+========================= */
+
+export const getPatients =
+async () => {
+  const res =
+  await API.get(
+    "/patients"
+  );
+
+  return res.data;
+};
+
+export const addPatient =
+async (payload) => {
+  const res =
+  await API.post(
+    "/patients",
     payload
   );
 
   return res.data;
-}; 
+};
 
- // CUSTOM API GENERATOR
- export const generateCustomAPI = async (payload) => {
-  const res = await API.post(
+export const getPatientById =
+async (id) => {
+  const res =
+  await API.get(
+    `/patients/${id}`
+  );
+
+  return res.data;
+};
+
+
+/* =========================
+   WORKSPACE
+========================= */
+
+export const getWorkspace =
+async (id) => {
+
+  const res =
+  await API.get(
+    `/patients/${id}/workspace`
+  );
+
+  return res.data;
+};
+
+export const getHistory =
+async (id) => {
+
+  const res =
+  await API.get(
+    `/patients/${id}/history`
+  );
+
+  return res.data;
+};
+
+
+/* =========================
+   CUSTOM API
+========================= */
+
+export const generateCustomAPI =
+async (payload) => {
+
+  const res =
+  await API.post(
     "/custom-api/generate",
     payload
   );
@@ -69,9 +170,16 @@ export const addPatient = async (payload) => {
   return res.data;
 };
 
-// BATCH PROCESSING
-export const processBatch = async (records) => {
-  const res = await API.post(
+
+/* =========================
+   BATCH
+========================= */
+
+export const processBatch =
+async (records) => {
+
+  const res =
+  await API.post(
     "/batch/process",
     {
       records
@@ -80,12 +188,17 @@ export const processBatch = async (records) => {
 
   return res.data;
 };
-// BATCH PROCESSING ke theek niche ise jod do:
-export const commitLedger = async (payload) => {
-  const res = await API.post(
+
+export const commitLedger =
+async (payload) => {
+
+  const res =
+  await API.post(
     "/ledger/commit",
     payload
   );
+
   return res.data;
 };
+
 export default API;

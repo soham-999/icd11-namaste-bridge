@@ -1,12 +1,9 @@
 // src/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
-import { 
-  mockPatients, 
-  namasteToIcdMatches, 
-  icdToNamasteMatches, 
+/*import {  
   globalHistoryLog 
-} from './data';
-import { getPatients, commitLedger } from './api';
+} from './data';*/
+import { getPatients, commitLedger, addPatient } from './api';
 
 import { 
   LayoutDashboard, 
@@ -41,7 +38,7 @@ export default function Dashboard() {
   const [mappingQuery, setMappingQuery] = useState('');
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [isValidationStamped, setIsValidationStamped] = useState(false);
-  const [localLogs, setLocalLogs] = useState(globalHistoryLog);
+  const [localLogs, setLocalLogs] = useState([]);
   const [liveSuggestions, setLiveSuggestions] = useState([]); 
   
   // Real-Time Simulation State
@@ -53,7 +50,7 @@ export default function Dashboard() {
 
   const activePatient = (patients && patients.length >0)
   ? (patients.find(p => p.id === selectedPatientId) || patients[0])
-  : {id: 'TEMP', name: 'Loading...', clinicalNotes: 'Fetching from database...'};
+  : {id: "", name: 'Loading...', clinicalNotes: "Waiting for backend"};
 
 
   // Simulating real-time telemetry fluctuations
@@ -83,33 +80,97 @@ export default function Dashboard() {
   };
  // ➔ NEW: API Call Hook (Telemetry ke theek baad)
   useEffect(() => {
-    const fetchLiveCodes = async () => {
-      if (mappingQuery.trim().length > 2) {
-        try {
-  const data = await getICDBySymptom(mappingQuery);
-  console.log("Backend se aaya raw data:", data); // Isse terminal/console me data dikhega
-  
-  // CRASH-PROOF LOGIC: Check karo ki data array hai ya nahi
-  if (Array.isArray(data)) {
-    setLiveSuggestions(data);
-  } else if (data && Array.isArray(data.matches)) {
-    setLiveSuggestions(data.matches);
-  } else if (data && Array.isArray(data.data)) {
-    setLiveSuggestions(data.data);
-  } else {
-    setLiveSuggestions([]); // Agar kuch samajh na aaye toh khali rakho, crash mat karo
-  }
-}
- catch (err) {
-  console.error("Database query failed:", err);
-  setLiveSuggestions([]);
-}
- } else {
-        setLiveSuggestions([]);
+
+  const fetchLiveCodes =
+  async () => {
+
+    if (
+      mappingQuery
+      .trim()
+      .length
+      < 3
+    ) {
+
+      setLiveSuggestions([]);
+
+      return;
+
+    }
+
+    try {
+
+      const result =
+      await addPatient({
+
+        name:
+        activePatient.name ||
+
+        "Temp",
+
+        age:20,
+
+        symptoms:[
+          mappingQuery
+        ]
+
+      });
+
+      console.log(
+        "Backend Mapping:",
+        result
+      );
+
+      const matches =
+
+      result.icdMapping ||
+
+      result.traditionalMapping ||
+
+      result.matches ||
+
+      [];
+
+      if(
+        Array.isArray(
+          matches
+        )
+      ){
+
+        setLiveSuggestions(
+          matches
+        );
+
       }
-    };
-    fetchLiveCodes();
-  }, [mappingQuery]);
+
+      else{
+
+        setLiveSuggestions(
+          [matches]
+        );
+
+      }
+
+    }
+
+    catch(err){
+
+      console.error(
+        err
+      );
+
+      setLiveSuggestions(
+        []
+      );
+
+    }
+
+  };
+
+  fetchLiveCodes();
+
+},[
+mappingQuery
+]);
 
   const activeSuggestions = liveSuggestions;
 
