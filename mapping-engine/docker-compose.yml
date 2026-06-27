@@ -10,7 +10,7 @@ services:
       # WHO API credentials
       - ME_WHO_ENABLED=true
       - ME_WHO_CLIENT_ID=${ME_WHO_CLIENT_ID:-}
-      - ME_WHO_CLIENT_SECRET=${ME_WHO_CLIENT_SECRET:-}
+      - ME_WHO_CLIENT_SECRET=${ME_WHO_CLIENT_SE        VVVGCRET:-}
       
       # Admin configuration
       - ME_ADMIN_ENABLED=true
