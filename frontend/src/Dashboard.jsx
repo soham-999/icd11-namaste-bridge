@@ -67,8 +67,27 @@ export default function Dashboard() {
 
   // Adrija's Step 5: Load real patients from backend gateway
   useEffect(() => {
-    loadPatients();
-  }, []);
+  const initialize = async () => {
+    try {
+      if (!localStorage.getItem("token")) {
+        await login({
+          username: "test",
+          password: "test123"
+        });
+      }
+
+      loadPatients();
+
+    } catch (err) {
+      console.error(
+        "Login failed:",
+        err
+      );
+    }
+  };
+
+  initialize();
+}, []);
 
   const loadPatients = async () => {
     try {

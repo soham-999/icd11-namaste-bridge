@@ -28,20 +28,13 @@ export const login = async (payload) => {
     "/auth/login",
     payload
   );
-  const token =
-      res.data.token ||
-      res.data.accessToken ||
-      res.data.jwt;
-
-  localStorage.setItem(
-    "token",
-    token
-  );
-  console.log(
-    "JWT Saved:",
-    token
-  );
-
+  if(res.data?.token)
+  {
+    localStorage.setItem(
+      "token",
+      res.data.token
+    );
+  }
   return res.data;
 };
 
