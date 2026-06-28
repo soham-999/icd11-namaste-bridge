@@ -141,9 +141,9 @@ export default function Dashboard() {
 
       const matches =
 
-      result.icdMapping ||
+      result.mapping ||
 
-      result.traditionalMapping ||
+      result.icdMapping ||
 
       result.matches ||
 
@@ -477,10 +477,10 @@ mappingQuery
                         className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedMatch === item ? 'bg-slate-850 border-teal-500' : 'bg-slate-900 border-slate-800'}`}
                       >
                         <div className="flex justify-between items-center">
-                          <span className="text-xs font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">{item.icdCode || item.term}</span>
-                          <span className="text-[10px] font-bold text-emerald-400">{(item.confidence * 100).toFixed(0)}% Match</span>
+                          <span className="text-xs font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">{item.icd?.icdCode || item.icd?.description || item.term}</span>
+                          <span className="text-[10px] font-bold text-emerald-400">{((item.icd?.confidence || 0) * 100).toFixed(0)}% Match</span>
                         </div>
-                        <p className="text-xs font-bold text-slate-200 mt-2">{item.title || `Target: ${item.term}`}</p>
+                        <p className="text-xs font-bold text-slate-200 mt-2">{item.icd?.description || `Target: ${item.symptom}`}</p>
                       </div>
                     ))}
                   </div>
