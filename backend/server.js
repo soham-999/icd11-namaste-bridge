@@ -76,6 +76,24 @@ require("./routes/exportRoutes");
 const logRoutes =
 require("./routes/logRoutes");
 
+const activityRoutes =
+require("./routes/activityRoutes");
+
+const analyticsRoutes =
+require("./routes/analyticsRoutes");
+
+const reportRoutes =
+require("./routes/reportRoutes");
+
+const settingsRoutes =
+require("./routes/settingsRoutes");
+
+
+const profileRoutes = require("./routes/profileRoutes");
+const searchRoutes = require("./routes/searchRoutes");
+const userRoutes = require("./routes/userRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+
 // ==========================
 // API ROUTES
 // ==========================
@@ -131,6 +149,36 @@ app.use(
   "/logs",
   logRoutes
 );
+
+app.use("/notifications", require("./routes/notificationRoutes"));
+
+
+
+app.use(
+  "/activity",
+  activityRoutes
+);
+
+app.use(
+  "/analytics",
+  analyticsRoutes
+);
+
+app.use(
+  "/reports",
+  reportRoutes
+);
+
+app.use(
+  "/settings",
+  settingsRoutes
+);
+
+
+app.use("/profile", profileRoutes);
+app.use("/search", searchRoutes);
+app.use("/users", userRoutes);
+app.use("/admin", adminRoutes);
 
 
 // ==========================
