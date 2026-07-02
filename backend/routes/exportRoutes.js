@@ -25,8 +25,7 @@ router.get(
           age,
           symptom,
           icd_code,
-          traditional_medicine,
-          created_at
+          traditional_medicine
         FROM patients
         ORDER BY id DESC
         `
@@ -173,5 +172,106 @@ ICD Code: ${patient.icd_code || "N/A"}
     }
   }
 );
+
+// =====================================
+// EXPORT DASHBOARD SUMMARY
+// =====================================
+
+router.get(
+  "/dashboard",
+  authMiddleware,
+  async (req, res) => {
+
+    try {
+
+      const patients =
+        await db.query(
+          `SELECT COUNT(*) FROM patients`
+        );
+
+      const mappings =
+        await db.query(
+          `SELECT COUNT(*) FROM mapping_results`
+        );
+
+      const diagnoses =
+        await db.query(
+          `SELECT COUNT(*) FROM diagnoses`
+        );
+
+      const users =
+        await db.query(
+          `SELECT COUNT(*) FROM users`
+        );
+
+      res.json({
+        success: true,
+        data: {
+          totalPatients:
+            Number(patients.rows[0].count),
+
+          totalMappings:
+            Number(mappings.rows[0].count),
+
+          totalDiagnoses:
+            Number(diagnoses.rows[0].count),
+
+          totalUsers:
+            Number(users.rows[0].count)
+        }
+      });
+
+    } catch (err) {
+
+      console.error(err);
+
+      res.status(500).json({
+        success: false,
+        message: err.message
+      });
+
+    }
+
+  }
+);
+
+// =====================================
+// EXPORT ALL MAPPINGS
+// =====================================
+
+router.get(
+  "/mappings",
+  authMiddleware,
+  async (req, res) => {
+
+    try {
+
+      const result =
+        await db.query(`
+          SELECT *
+          FROM mapping_results
+          ORDER BY created_at DESC
+        `);
+
+      res.json({
+        success: true,
+        total: result.rows.length,
+        data: result.rows
+      });
+
+    } catch (err) {
+
+      console.error(err);
+
+      res.status(500).json({
+        success: false,
+        message: err.message
+      });
+
+    }
+
+  }
+);
+
 
 module.exports = router;
